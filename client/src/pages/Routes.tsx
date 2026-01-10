@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useRoutes } from "@/hooks/use-routes";
 import { RouteCard } from "@/components/RouteCard";
@@ -6,11 +6,21 @@ import { CreateRouteDialog } from "@/components/CreateRouteDialog";
 import { Input } from "@/components/ui/input";
 import { Search, Loader2 } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
+import { useLocation } from "wouter";
 
 export default function RoutesPage() {
   const { user } = useAuth();
-  const [search, setSearch] = useState("");
+  const [location] = useLocation();
+  const searchParams = new URLSearchParams(location.split('?')[1]);
+  const initialSearch = searchParams.get('search') || "";
+  
+  const [search, setSearch] = useState(initialSearch);
   const { data: routes, isLoading } = useRoutes(search);
+
+  // Sync search state with URL parameter if it changes
+  useEffect(() => {
+    setSearch(initialSearch);
+  }, [initialSearch]);
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -33,6 +43,7 @@ export default function RoutesPage() {
             placeholder="Search by route name, location, or operator..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            data-testid="input-route-search-page"
           />
         </div>
 
@@ -41,7 +52,7 @@ export default function RoutesPage() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:flex-row lg:grid-cols-3 gap-6">
             {routes?.length === 0 ? (
               <div className="col-span-full text-center py-12">
                 <p className="text-muted-foreground text-lg">No routes found matching your search.</p>

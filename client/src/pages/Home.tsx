@@ -1,13 +1,24 @@
 import { useAuth } from "@/hooks/use-auth";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { NotificationList } from "@/components/NotificationList";
 import { useNotifications } from "@/hooks/use-notifications";
-import { ArrowRight, Bus, Bell, Shield } from "lucide-react";
+import { ArrowRight, Bus, Bell, Shield, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
 
 export default function Home() {
   const { user } = useAuth();
   const { data: notifications, isLoading } = useNotifications();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [, setLocation] = useLocation();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      setLocation(`/routes?search=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
 
   // Filter for critical alerts on homepage
   const criticalAlerts = notifications?.filter(n => 
@@ -36,6 +47,7 @@ export default function Home() {
                   onClick={() => window.location.href = "/api/login"}
                   variant="secondary" 
                   className="font-bold shadow-lg shadow-black/20"
+                  data-testid="button-operator-login"
                 >
                   Operator Login
                 </Button>
@@ -44,6 +56,7 @@ export default function Home() {
                   onClick={() => window.location.href = "/api/logout"}
                   variant="outline" 
                   className="bg-transparent border-white/30 text-white hover:bg-white/10"
+                  data-testid="button-logout"
                 >
                   Log Out
                 </Button>
@@ -51,28 +64,43 @@ export default function Home() {
             </div>
           </nav>
 
-          <div className="max-w-2xl">
+          <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-5xl md:text-6xl font-display font-extrabold tracking-tight mb-6 leading-tight">
               Commute with <br />
               <span className="text-secondary">Confidence.</span>
             </h1>
-            <p className="text-xl opacity-90 mb-8 font-light">
+            <p className="text-xl opacity-90 mb-12 font-light max-w-2xl mx-auto">
               Real-time bus schedules and alerts for South Africa. 
-              Never miss a connection again with live updates from Putco, Rea Vaya, and more.
+              Search for your route to get live updates.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
+            
+            <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto mb-12">
+              <div className="relative group">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                <Input
+                  type="text"
+                  placeholder="Where are you going? (e.g., Soweto, Sandton)"
+                  className="h-16 pl-12 pr-32 text-lg rounded-2xl bg-white/95 text-foreground border-0 shadow-2xl focus-visible:ring-2 focus-visible:ring-secondary transition-all"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  data-testid="input-route-search"
+                />
+                <Button 
+                  type="submit"
+                  className="absolute right-2 top-2 h-12 px-6 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg"
+                  data-testid="button-search-submit"
+                >
+                  Search
+                </Button>
+              </div>
+            </form>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/routes">
-                <Button size="lg" className="h-14 px-8 text-lg bg-white text-primary hover:bg-secondary hover:text-secondary-foreground transition-colors shadow-xl">
-                  Find Your Route <ArrowRight className="ml-2 h-5 w-5" />
+                <Button variant="link" className="text-white opacity-80 hover:opacity-100 transition-opacity" data-testid="link-view-all-routes">
+                  Browse all routes <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-              {user && (
-                <Link href="/subscriptions">
-                  <Button size="lg" variant="outline" className="h-14 px-8 text-lg bg-transparent border-white text-white hover:bg-white/10">
-                    My Alerts
-                  </Button>
-                </Link>
-              )}
             </div>
           </div>
         </div>
@@ -113,7 +141,7 @@ export default function Home() {
               Live Incidents
             </h2>
             <Link href="/notifications">
-              <Button variant="link" className="text-primary font-bold">View All Alerts</Button>
+              <Button variant="link" className="text-primary font-bold" data-testid="link-view-all-alerts">View All Alerts</Button>
             </Link>
           </div>
           
