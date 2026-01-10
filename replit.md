@@ -1,0 +1,96 @@
+# MzansiMove - Route Tracking Application
+
+## Overview
+
+MzansiMove is a South African bus route tracking and notification application. The platform allows commuters to browse bus routes, subscribe to routes for real-time alerts, and receive notifications about delays, cancellations, and service changes. Operators can manage routes and publish alerts to keep passengers informed.
+
+The application follows a Material Design-inspired approach with Google Maps styling for navigation contexts, focusing on utility, clarity, and efficient route management workflows.
+
+## User Preferences
+
+Preferred communication style: Simple, everyday language.
+
+## System Architecture
+
+### Frontend Architecture
+- **Framework**: React with TypeScript
+- **Routing**: Wouter (lightweight client-side routing)
+- **State Management**: TanStack React Query for server state, with custom hooks for data fetching
+- **UI Components**: shadcn/ui component library built on Radix UI primitives
+- **Styling**: Tailwind CSS with custom design tokens (CSS variables for theming)
+- **Animations**: Framer Motion for smooth transitions
+- **Build Tool**: Vite with React plugin
+
+### Backend Architecture
+- **Runtime**: Node.js with Express.js
+- **Language**: TypeScript with ESM modules
+- **API Design**: RESTful endpoints with typed route contracts defined in `shared/routes.ts`
+- **Validation**: Zod schemas for request/response validation
+- **Authentication**: Replit Auth integration using OpenID Connect with Passport.js
+
+### Data Storage
+- **Database**: PostgreSQL via Drizzle ORM
+- **Schema Location**: `shared/schema.ts` contains all table definitions
+- **Migrations**: Drizzle Kit for database schema management (`drizzle-kit push`)
+- **Session Storage**: PostgreSQL-backed sessions using `connect-pg-simple`
+
+### Core Data Models
+- **Bus Routes**: Route information including name, description, start/end locations, operating company
+- **Notifications**: Alerts tied to routes with types (delay, cancellation, info, emergency)
+- **Subscriptions**: User-route relationships for personalized alert delivery
+- **Users/Sessions**: Authentication tables managed by Replit Auth integration
+
+### API Structure
+Routes are defined with full type contracts in `shared/routes.ts`:
+- `GET /api/routes` - List all bus routes with optional search
+- `GET /api/routes/:id` - Get single route details
+- `POST /api/routes` - Create route (authenticated)
+- `PUT /api/routes/:id` - Update route (authenticated)
+- `DELETE /api/routes/:id` - Delete route (authenticated)
+- `GET /api/notifications` - List notifications
+- `POST /api/notifications` - Create notification (authenticated)
+- `GET /api/subscriptions` - Get user's subscriptions
+- `POST /api/subscriptions` - Subscribe to route
+- `DELETE /api/subscriptions/:routeId` - Unsubscribe from route
+
+### Authentication Flow
+- Replit Auth via OpenID Connect handles user authentication
+- Session-based authentication with PostgreSQL session store
+- Protected routes use `isAuthenticated` middleware
+- User data stored in `users` table with Replit profile information
+
+### Project Structure
+```
+client/           # Frontend React application
+  src/
+    components/   # Reusable UI components
+    hooks/        # Custom React hooks for data fetching
+    pages/        # Page components (Home, Routes, Notifications, Subscriptions)
+    lib/          # Utilities and query client setup
+server/           # Express backend
+  replit_integrations/auth/  # Replit Auth integration
+shared/           # Shared types, schemas, and API contracts
+  models/         # Database model definitions
+  schema.ts       # Drizzle table definitions
+  routes.ts       # API contract definitions
+```
+
+## External Dependencies
+
+### Database
+- **PostgreSQL**: Primary database (requires `DATABASE_URL` environment variable)
+- **Drizzle ORM**: Database operations and schema management
+
+### Authentication
+- **Replit Auth**: OpenID Connect-based authentication
+- **Required Environment Variables**: `ISSUER_URL`, `REPL_ID`, `SESSION_SECRET`, `DATABASE_URL`
+
+### Key NPM Packages
+- **Frontend**: React, TanStack Query, Wouter, Radix UI, Tailwind CSS, Framer Motion, date-fns
+- **Backend**: Express, Passport, express-session, connect-pg-simple, Zod
+- **Shared**: Drizzle ORM, drizzle-zod for schema-to-validation integration
+
+### Build & Development
+- **Vite**: Frontend bundler with HMR support
+- **esbuild**: Server bundling for production
+- **tsx**: TypeScript execution for development
