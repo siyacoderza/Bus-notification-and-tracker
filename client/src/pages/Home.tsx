@@ -3,21 +3,22 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { NotificationList } from "@/components/NotificationList";
 import { useNotifications } from "@/hooks/use-notifications";
-import { ArrowRight, Bus, Bell, Shield, Search } from "lucide-react";
+import { ArrowRight, Bus, Bell, Shield, Search, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { useRoutes } from "@/hooks/use-routes";
+import { RouteCard } from "@/components/RouteCard";
 
 export default function Home() {
   const { user } = useAuth();
-  const { data: notifications, isLoading } = useNotifications();
+  const { data: notifications, isLoading: isLoadingNotifications } = useNotifications();
   const [searchQuery, setSearchQuery] = useState("");
-  const [, setLocation] = useLocation();
+  const [activeSearch, setActiveSearch] = useState("");
+  const { data: routes, isLoading: isLoadingRoutes } = useRoutes(activeSearch);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      setLocation(`/routes?search=${encodeURIComponent(searchQuery.trim())}`);
-    }
+    setActiveSearch(searchQuery.trim());
   };
 
   // Filter for critical alerts on homepage
@@ -94,20 +95,37 @@ export default function Home() {
                 </Button>
               </div>
             </form>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/routes">
-                <Button variant="link" className="text-white opacity-80 hover:opacity-100 transition-opacity" data-testid="link-view-all-routes">
-                  Browse all routes <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 relative z-20 pb-20">
+        {/* Search Results Section */}
+        {activeSearch && (
+          <div className="mb-12">
+            <h2 className="text-3xl font-display font-bold mb-6 flex items-center gap-3">
+              <Search className="h-8 w-8 text-primary" />
+              Search Results
+            </h2>
+            {isLoadingRoutes ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : routes && routes.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {routes.map((route) => (
+                  <RouteCard key={route.id} route={route} showAdminControls={false} />
+                ))}
+              </div>
+            ) : (
+              <div className="bg-card rounded-3xl p-12 text-center border border-border/50 shadow-sm">
+                <p className="text-muted-foreground text-lg">No routes found matching "{activeSearch}".</p>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {/* Feature Cards */}
           <div className="bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/50">
@@ -145,7 +163,7 @@ export default function Home() {
             </Link>
           </div>
           
-          <NotificationList notifications={criticalAlerts} loading={isLoading} />
+          <NotificationList notifications={criticalAlerts} loading={isLoadingNotifications} />
         </div>
       </div>
     </div>
