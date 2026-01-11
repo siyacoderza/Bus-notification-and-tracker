@@ -159,7 +159,7 @@ export default function Home() {
               Live Incidents
             </h2>
             <Link href="/notifications">
-              <Button variant="link" className="text-primary font-bold" data-testid="link-view-all-alerts">View All Alerts</Button>
+              <Button variant="ghost" className="text-primary font-bold" data-testid="link-view-all-alerts">View All Alerts</Button>
             </Link>
           </div>
           
