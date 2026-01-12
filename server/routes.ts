@@ -102,11 +102,20 @@ export async function registerRoutes(
     }
   });
 
-  app.delete(api.subscriptions.delete.path, isAuthenticated, async (req: any, res) => {
+  app.delete(api.routes.delete.path, isAuthenticated, async (req: any, res) => {
     const userId = req.user.claims.sub;
     const routeId = Number(req.params.routeId);
     await storage.deleteSubscription(userId, routeId);
     res.status(204).send();
+  });
+
+  app.post("/api/routes/:id/waiting", async (req, res) => {
+    try {
+      const route = await storage.incrementWaitingCount(parseInt(req.params.id));
+      res.json(route);
+    } catch (e) {
+      res.status(404).json({ message: "Route not found" });
+    }
   });
 
   // Seed Data

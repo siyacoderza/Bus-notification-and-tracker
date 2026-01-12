@@ -19,6 +19,7 @@ export interface IStorage {
   createBusRoute(route: InsertBusRoute): Promise<BusRoute>;
   updateBusRoute(id: number, updates: Partial<InsertBusRoute>): Promise<BusRoute>;
   deleteBusRoute(id: number): Promise<void>;
+  incrementWaitingCount(id: number): Promise<BusRoute>;
 
   // Notifications
   getNotifications(userId?: string): Promise<(Notification & { routeName?: string })[]>;
@@ -60,6 +61,18 @@ export class DatabaseStorage implements IStorage {
 
   async deleteBusRoute(id: number): Promise<void> {
     await db.delete(busRoutes).where(eq(busRoutes.id, id));
+  }
+
+  async incrementWaitingCount(id: number): Promise<BusRoute> {
+    const [route] = await db.select().from(busRoutes).where(eq(busRoutes.id, id));
+    if (!route) throw new Error("Route not found");
+    
+    const [updated] = await db
+      .update(busRoutes)
+      .set({ waitingCount: (route.waitingCount || 0) + 1 })
+      .where(eq(busRoutes.id, id))
+      .returning();
+    return updated;
   }
 
   // Notifications

@@ -18,6 +18,28 @@ export function useRoutes(search?: string) {
   });
 }
 
+export function useIncrementWaiting() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/routes/${id}/waiting`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to update waiting count");
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [api.routes.list.path] });
+    },
+    onError: (error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  });
+}
+
 export function useRoute(id: number) {
   return useQuery({
     queryKey: [api.routes.get.path, id],
