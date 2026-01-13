@@ -117,7 +117,7 @@ export default function Home() {
               ) : routes && routes.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {routes.map((route) => (
-                    <RouteCard key={route.id} route={route} showAdminControls={user?.role === 'admin'} />
+                    <RouteCard key={route.id} route={route} showAdminControls={false} />
                   ))}
                 </div>
               ) : (
@@ -162,7 +162,7 @@ export default function Home() {
               Live Incidents
             </h2>
             <Link href="/notifications">
-              <Button variant="link" className="text-primary font-bold" data-testid="link-view-all-alerts">View All Alerts</Button>
+              <Button variant="ghost" className="text-primary font-bold" data-testid="link-view-all-alerts">View All Alerts</Button>
             </Link>
           </div>
           
