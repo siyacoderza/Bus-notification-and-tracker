@@ -59,7 +59,7 @@ export default function RoutesPage() {
               </div>
             ) : (
               routes?.map((route) => (
-                <RouteCard key={route.id} route={route} showAdminControls={!!user} />
+                <RouteCard key={route.id} route={route} showAdminControls={user?.role === 'admin'} />
               ))
             )}
           </div>

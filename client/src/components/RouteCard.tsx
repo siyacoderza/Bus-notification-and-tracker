@@ -30,6 +30,8 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
     }
   };
 
+  const isOperator = user?.role === 'operator';
+
   return (
     <Card className="group hover:shadow-lg hover:border-primary/20 transition-all duration-300 relative overflow-hidden bg-white/50 backdrop-blur-sm">
       <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-primary to-primary/50 group-hover:w-2 transition-all duration-300" />
@@ -58,7 +60,7 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
       </CardContent>
 
       <CardFooter className="flex gap-3 pt-2">
-        {user ? (
+        {user && !isOperator ? (
           <Button 
             onClick={handleSubscription} 
             disabled={isPending}
@@ -67,13 +69,19 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
           >
             {isSubscribed ? "Subscribed" : "Subscribe for Alerts"}
           </Button>
-        ) : (
+        ) : !user ? (
           <Button variant="outline" className="flex-1 w-full" disabled>
             Log in to Subscribe
           </Button>
+        ) : null}
+
+        {isOperator && (
+          <div className="flex-1 text-sm font-medium text-center text-muted-foreground p-2 bg-muted/30 rounded-lg">
+            Status Management Mode
+          </div>
         )}
 
-        {showAdminControls && user && (
+        {showAdminControls && user?.role === 'admin' && (
           <Button 
             variant="destructive" 
             size="icon"
