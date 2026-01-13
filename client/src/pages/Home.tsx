@@ -45,7 +45,7 @@ export default function Home() {
             <div className="flex gap-4">
               {!user ? (
                 <Button 
-                  onClick={() => window.location.href = "/api/login"}
+                  onClick={() => window.location.href = `${window.location.origin}/api/login`}
                   variant="secondary" 
                   className="font-bold shadow-lg shadow-black/20"
                   data-testid="button-operator-login"
@@ -54,7 +54,7 @@ export default function Home() {
                 </Button>
               ) : (
                 <Button 
-                  onClick={() => window.location.href = "/api/logout"}
+                  onClick={() => window.location.href = `${window.location.origin}/api/logout`}
                   variant="outline" 
                   className="bg-transparent border-white/30 text-white hover:bg-white/10"
                   data-testid="button-logout"
