@@ -117,7 +117,7 @@ export default function Home() {
               ) : routes && routes.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {routes.map((route) => (
-                    <RouteCard key={route.id} route={route} showAdminControls={false} />
+                    <RouteCard key={route.id} route={route} showAdminControls={user?.role === 'admin' || user?.role === 'operator'} />
                   ))}
                 </div>
               ) : (
