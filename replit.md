@@ -1,10 +1,10 @@
-# MzansiMove - Route Tracking Application
+# replit.md
 
 ## Overview
 
-MzansiMove is a South African bus route tracking and notification application. The platform allows commuters to browse bus routes, subscribe to routes for real-time alerts, and receive notifications about delays, cancellations, and service changes. Operators can manage routes and publish alerts to keep passengers informed.
+This repository appears to be in an early stage of development with minimal content. Currently, it only contains a Semgrep configuration file for security linting rules, specifically targeting TypeScript code for CORS-related security vulnerabilities.
 
-The application follows a Material Design-inspired approach with Google Maps styling for navigation contexts, focusing on utility, clarity, and efficient route management workflows.
+The project structure suggests this may be intended as a TypeScript-based web application with security considerations built into the development workflow.
 
 ## User Preferences
 
@@ -12,85 +12,41 @@ Preferred communication style: Simple, everyday language.
 
 ## System Architecture
 
-### Frontend Architecture
-- **Framework**: React with TypeScript
-- **Routing**: Wouter (lightweight client-side routing)
-- **State Management**: TanStack React Query for server state, with custom hooks for data fetching
-- **UI Components**: shadcn/ui component library built on Radix UI primitives
-- **Styling**: Tailwind CSS with custom design tokens (CSS variables for theming)
-- **Animations**: Framer Motion for smooth transitions
-- **Build Tool**: Vite with React plugin
+### Current State
 
-### Backend Architecture
-- **Runtime**: Node.js with Express.js
-- **Language**: TypeScript with ESM modules
-- **API Design**: RESTful endpoints with typed route contracts defined in `shared/routes.ts`
-- **Validation**: Zod schemas for request/response validation
-- **Authentication**: Replit Auth integration using OpenID Connect with Passport.js
+The repository is largely empty, with only development tooling configuration present:
 
-### Data Storage
-- **Database**: PostgreSQL via Drizzle ORM
-- **Schema Location**: `shared/schema.ts` contains all table definitions
-- **Migrations**: Drizzle Kit for database schema management (`drizzle-kit push`)
-- **Session Storage**: PostgreSQL-backed sessions using `connect-pg-simple`
+- **Security Linting**: Semgrep rules configured to catch CORS regex vulnerabilities in TypeScript code
+- **Language Target**: TypeScript (based on Semgrep rule configuration)
 
-### Core Data Models
-- **Bus Routes**: Route information including name, description, start/end locations, operating company
-- **Notifications**: Alerts tied to routes with types (delay, cancellation, info, emergency)
-- **Subscriptions**: User-route relationships for personalized alert delivery
-- **Users/Sessions**: Authentication tables managed by Replit Auth integration
+### Architectural Decisions
 
-### API Structure
-Routes are defined with full type contracts in `shared/routes.ts`:
-- `GET /api/routes` - List all bus routes with optional search
-- `GET /api/routes/:id` - Get single route details
-- `POST /api/routes` - Create route (authenticated)
-- `PUT /api/routes/:id` - Update route (authenticated)
-- `DELETE /api/routes/:id` - Delete route (authenticated)
-- `GET /api/notifications` - List notifications
-- `POST /api/notifications` - Create notification (authenticated)
-- `GET /api/subscriptions` - Get user's subscriptions
-- `POST /api/subscriptions` - Subscribe to route
-- `DELETE /api/subscriptions/:routeId` - Unsubscribe from route
+**Security-First Approach**
+- Problem: Web applications need protection against common security vulnerabilities
+- Solution: Pre-configured Semgrep rules to catch CORS misconfigurations during development
+- Pros: Catches security issues early in development cycle
+- Cons: May require additional configuration as project grows
 
-### Authentication Flow
-- Replit Auth via OpenID Connect handles user authentication
-- Session-based authentication with PostgreSQL session store
-- Protected routes use `isAuthenticated` middleware
-- User data stored in `users` table with Replit profile information
+Since this repository has minimal content, architectural decisions should be made as the project develops. When building out the application:
 
-### Project Structure
-```
-client/           # Frontend React application
-  src/
-    components/   # Reusable UI components
-    hooks/        # Custom React hooks for data fetching
-    pages/        # Page components (Home, Routes, Notifications, Subscriptions)
-    lib/          # Utilities and query client setup
-server/           # Express backend
-  replit_integrations/auth/  # Replit Auth integration
-shared/           # Shared types, schemas, and API contracts
-  models/         # Database model definitions
-  schema.ts       # Drizzle table definitions
-  routes.ts       # API contract definitions
-```
+1. Consider the frontend/backend separation needs
+2. Determine data storage requirements
+3. Plan authentication strategy if user accounts are needed
+4. Design API structure for client-server communication
 
 ## External Dependencies
 
-### Database
-- **PostgreSQL**: Primary database (requires `DATABASE_URL` environment variable)
-- **Drizzle ORM**: Database operations and schema management
+### Development Tools
 
-### Authentication
-- **Replit Auth**: OpenID Connect-based authentication
-- **Required Environment Variables**: `ISSUER_URL`, `REPL_ID`, `SESSION_SECRET`, `DATABASE_URL`
+- **Semgrep**: Static analysis tool for security scanning
+  - Used for: Catching security vulnerabilities in TypeScript code
+  - Configuration location: `.config/replit/.semgrep/semgrep_rules.json`
 
-### Key NPM Packages
-- **Frontend**: React, TanStack Query, Wouter, Radix UI, Tailwind CSS, Framer Motion, date-fns
-- **Backend**: Express, Passport, express-session, connect-pg-simple, Zod
-- **Shared**: Drizzle ORM, drizzle-zod for schema-to-validation integration
+### Pending Dependencies
 
-### Build & Development
-- **Vite**: Frontend bundler with HMR support
-- **esbuild**: Server bundling for production
-- **tsx**: TypeScript execution for development
+No runtime dependencies have been configured yet. As the project develops, consider:
+
+- Package manager (npm/yarn/pnpm)
+- Framework selection (React, Vue, Express, etc.)
+- Database solution if data persistence is needed
+- Authentication provider if user management is required
