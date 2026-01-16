@@ -31,6 +31,17 @@ export async function registerRoutes(
     res.json(routesWithCounts);
   });
 
+  app.post("/api/routes/:id/wait", async (req, res) => {
+    const routeId = Number(req.params.id);
+    const route = await storage.getBusRoute(routeId);
+    if (!route) return res.status(404).send("Route not found");
+    
+    const updated = await storage.updateBusRoute(routeId, {
+      waitingCount: (route.waitingCount || 0) + 1
+    });
+    res.json(updated);
+  });
+
   app.get(api.routes.get.path, async (req, res) => {
     const route = await storage.getBusRoute(Number(req.params.id));
     if (!route) {

@@ -2,10 +2,12 @@ import { type BusRoute } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Bus, Trash2, Users } from "lucide-react";
+import { MapPin, Bus, Trash2, Users, Loader2 } from "lucide-react";
 import { useSubscribe, useUnsubscribe, useSubscriptions } from "@/hooks/use-subscriptions";
 import { useAuth } from "@/hooks/use-auth";
 import { useDeleteRoute } from "@/hooks/use-routes";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 interface RouteCardProps {
   route: BusRoute;
@@ -32,6 +34,16 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
 
   const isOperator = user?.role === 'operator';
   const waitingCount = route.waitingCount || 0;
+
+  const incrementWaiting = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", `/api/routes/${route.id}/wait`);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/routes"] });
+    },
+  });
 
   return (
     <Card className="group hover:shadow-lg hover:border-primary/20 transition-all duration-300 relative overflow-hidden bg-white/50 backdrop-blur-sm">
@@ -66,24 +78,43 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
         </div>
       </CardContent>
 
-      <CardFooter className="flex gap-3 pt-2">
-        {user && !isOperator ? (
+      <CardFooter className="flex flex-col gap-3 pt-2">
+        <div className="flex w-full gap-3">
           <Button 
-            onClick={handleSubscription} 
-            disabled={isPending}
-            variant={isSubscribed ? "outline" : "default"}
-            className={`flex-1 transition-all ${isSubscribed ? 'border-primary/50 text-primary hover:bg-primary/5' : 'bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20'}`}
+            onClick={() => incrementWaiting.mutate()}
+            disabled={incrementWaiting.isPending}
+            variant="outline"
+            className="flex-1 border-primary/50 text-primary hover:bg-primary/5 shadow-sm"
+            data-testid={`button-wait-route-${route.id}`}
           >
-            {isSubscribed ? "Subscribed" : "Subscribe for Alerts"}
+            {incrementWaiting.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <Users className="h-4 w-4 mr-2" />
+            )}
+            I'm Waiting
           </Button>
-        ) : !user ? (
-          <Button variant="outline" className="flex-1 w-full" disabled>
-            Log in to Subscribe
-          </Button>
-        ) : null}
+
+          {user && !isOperator && (
+            <Button 
+              onClick={handleSubscription} 
+              disabled={isPending}
+              variant={isSubscribed ? "outline" : "default"}
+              className={`flex-1 transition-all ${isSubscribed ? 'border-primary/50 text-primary hover:bg-primary/5' : 'bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20'}`}
+            >
+              {isSubscribed ? "Subscribed" : "Subscribe for Alerts"}
+            </Button>
+          )}
+        </div>
+
+        {!user && (
+          <p className="text-[10px] text-muted-foreground text-center w-full">
+            Log in to receive notifications for this route
+          </p>
+        )}
 
         {isOperator && (
-          <div className="flex-1 text-sm font-medium text-center text-muted-foreground p-2 bg-muted/30 rounded-lg">
+          <div className="w-full text-sm font-medium text-center text-muted-foreground p-2 bg-muted/30 rounded-lg">
             Status Management Mode
           </div>
         )}
@@ -92,6 +123,7 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
           <Button 
             variant="destructive" 
             size="icon"
+            className="absolute bottom-4 right-4"
             onClick={() => {
               if (confirm('Delete this route? This cannot be undone.')) {
                 deleteRoute.mutate(route.id);
