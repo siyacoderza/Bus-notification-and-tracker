@@ -11,6 +11,8 @@ import {
   type Subscription,
   type CreateSubscriptionRequest,
   type User,
+  type Review,
+  type InsertReview,
 } from "@shared/schema";
 import { eq, desc, and } from "drizzle-orm";
 
@@ -31,6 +33,11 @@ export interface IStorage {
   createSubscription(userId: string, routeId: number): Promise<Subscription>;
   deleteSubscription(userId: string, routeId: number): Promise<void>;
   getRouteSubscriptions(routeId: number): Promise<Subscription[]>;
+
+  // Reviews
+  getRouteReviews(routeId: number): Promise<(Review & { user: User })[]>;
+  createReview(review: InsertReview): Promise<Review>;
+
   // User Preferences
   getUser(id: string): Promise<User | undefined>;
   updateUserPreferences(id: string, pinned: number[], hidden: number[]): Promise<User>;
@@ -54,9 +61,7 @@ export class DatabaseStorage implements IStorage {
 
   // Routes
   async getBusRoutes(search?: string): Promise<BusRoute[]> {
-    // Basic search implementation
     const query = db.select().from(busRoutes);
-    // In a real app, add where clause for search
     return await query.orderBy(busRoutes.name);
   }
 
@@ -85,8 +90,6 @@ export class DatabaseStorage implements IStorage {
 
   // Notifications
   async getNotifications(userId?: string): Promise<(Notification & { routeName?: string })[]> {
-    // If userId provided, could filter by subscriptions. For now, return all active.
-    // Joining with routes to get names
     const results = await db
       .select({
         notification: notifications,
@@ -140,6 +143,29 @@ export class DatabaseStorage implements IStorage {
 
   async getRouteSubscriptions(routeId: number): Promise<Subscription[]> {
     return await db.select().from(subscriptions).where(eq(subscriptions.routeId, routeId));
+  }
+
+  // Reviews
+  async getRouteReviews(routeId: number): Promise<(Review & { user: User })[]> {
+    const results = await db
+      .select({
+        review: reviews,
+        user: users,
+      })
+      .from(reviews)
+      .innerJoin(users, eq(reviews.userId, users.id))
+      .where(eq(reviews.routeId, routeId))
+      .orderBy(desc(reviews.createdAt));
+    
+    return results.map(r => ({
+      ...r.review,
+      user: r.user,
+    }));
+  }
+
+  async createReview(review: InsertReview): Promise<Review> {
+    const [newReview] = await db.insert(reviews).values(review).returning();
+    return newReview;
   }
 }
 

@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
+import { insertReviewSchema } from "@shared/schema";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -29,6 +30,31 @@ export async function registerRoutes(
     }));
     
     res.json(routesWithCounts);
+  });
+
+  app.get("/api/routes/:id/reviews", async (req, res) => {
+    const routeId = Number(req.params.id);
+    const reviews = await storage.getRouteReviews(routeId);
+    res.json(reviews);
+  });
+
+  app.post("/api/routes/:id/reviews", isAuthenticated, async (req: any, res) => {
+    try {
+      const routeId = Number(req.params.id);
+      const userId = req.user.claims.sub;
+      const input = insertReviewSchema.parse({
+        ...req.body,
+        routeId,
+        userId
+      });
+      const review = await storage.createReview(input);
+      res.status(201).json(review);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      res.status(500).send("Error creating review");
+    }
   });
 
   app.post("/api/routes/:id/wait", async (req, res) => {
