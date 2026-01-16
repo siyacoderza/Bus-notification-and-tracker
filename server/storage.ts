@@ -3,12 +3,14 @@ import {
   busRoutes,
   notifications,
   subscriptions,
+  users,
   type BusRoute,
   type InsertBusRoute,
   type Notification,
   type InsertNotification,
   type Subscription,
   type CreateSubscriptionRequest,
+  type User,
 } from "@shared/schema";
 import { eq, desc, and } from "drizzle-orm";
 

@@ -92,3 +92,38 @@ export function useDeleteRoute() {
     }
   });
 }
+
+export function useUpdateRoute() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, updates }: { id: number; updates: Partial<InsertBusRoute> }) => {
+      const validated = api.routes.update.input.parse(updates);
+      const url = buildUrl(api.routes.update.path, { id });
+      const res = await fetch(url, {
+        method: api.routes.update.method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(validated),
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        if (res.status === 400) {
+          const error = api.routes.update.responses[400].parse(await res.json());
+          throw new Error(error.message);
+        }
+        if (res.status === 401) throw new Error("Unauthorized");
+        throw new Error('Failed to update route');
+      }
+      return api.routes.update.responses[200].parse(await res.json());
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [api.routes.list.path] });
+      toast({ title: "Route Updated", description: "Bus route updated successfully." });
+    },
+    onError: (error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  });
+}

@@ -139,7 +139,7 @@ export async function registerRoutes(
 
     const pinned = user.pinnedRoutes || [];
     const newPinned = pinned.includes(routeId) 
-      ? pinned.filter(id => id !== routeId)
+      ? pinned.filter((id: number) => id !== routeId)
       : [...pinned, routeId];
     
     await storage.updateUserPreferences(userId, newPinned, user.hiddenRoutes || []);
@@ -154,7 +154,7 @@ export async function registerRoutes(
 
     const hidden = user.hiddenRoutes || [];
     const newHidden = hidden.includes(routeId)
-      ? hidden.filter(id => id !== routeId)
+      ? hidden.filter((id: number) => id !== routeId)
       : [...hidden, routeId];
     
     await storage.updateUserPreferences(userId, user.pinnedRoutes || [], newHidden);
