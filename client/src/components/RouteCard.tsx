@@ -79,12 +79,12 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
       </CardContent>
 
       <CardFooter className="flex flex-col gap-3 pt-2">
-        <div className="flex w-full gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
           <Button 
             onClick={() => incrementWaiting.mutate()}
             disabled={incrementWaiting.isPending}
             variant="outline"
-            className="flex-1 border-primary/50 text-primary hover:bg-primary/5 shadow-sm"
+            className="w-full border-primary/50 text-primary hover:bg-primary/5 shadow-sm"
             data-testid={`button-wait-route-${route.id}`}
           >
             {incrementWaiting.isPending ? (
@@ -92,7 +92,7 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
             ) : (
               <Users className="h-4 w-4 mr-2" />
             )}
-            I'm Waiting
+            <span className="truncate">I'm Waiting</span>
           </Button>
 
           {user && !isOperator && (
@@ -100,9 +100,9 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
               onClick={handleSubscription} 
               disabled={isPending}
               variant={isSubscribed ? "outline" : "default"}
-              className={`flex-1 transition-all ${isSubscribed ? 'border-primary/50 text-primary hover:bg-primary/5' : 'bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20'}`}
+              className={`w-full transition-all ${isSubscribed ? 'border-primary/50 text-primary hover:bg-primary/5' : 'bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20'}`}
             >
-              {isSubscribed ? "Subscribed" : "Subscribe for Alerts"}
+              <span className="truncate">{isSubscribed ? "Subscribed" : "Subscribe for Alerts"}</span>
             </Button>
           )}
         </div>
