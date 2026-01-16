@@ -8,16 +8,22 @@ import Home from "@/pages/Home";
 import RoutesPage from "@/pages/Routes";
 import NotificationsPage from "@/pages/Notifications";
 import SubscriptionsPage from "@/pages/Subscriptions";
+import { Footer } from "@/components/Footer";
 
 function Router() {
   return (
-    <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/routes" component={RoutesPage} />
-      <Route path="/notifications" component={NotificationsPage} />
-      <Route path="/subscriptions" component={SubscriptionsPage} />
-      <Route component={NotFound} />
-    </Switch>
+    <div className="flex flex-col min-h-screen">
+      <main className="flex-grow">
+        <Switch>
+          <Route path="/" component={Home} />
+          <Route path="/routes" component={RoutesPage} />
+          <Route path="/notifications" component={NotificationsPage} />
+          <Route path="/subscriptions" component={SubscriptionsPage} />
+          <Route component={NotFound} />
+        </Switch>
+      </main>
+      <Footer />
+    </div>
   );
 }
 
