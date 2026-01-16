@@ -15,6 +15,7 @@ export const busRoutes = pgTable("bus_routes", {
   endLocation: text("end_location").notNull(),
   operatingCompany: text("operating_company").notNull(), // e.g., "Putco", "Rea Vaya"
   isActive: boolean("is_active").default(true),
+  waitingCount: integer("waiting_count").default(0),
 });
 
 export const notifications = pgTable("notifications", {

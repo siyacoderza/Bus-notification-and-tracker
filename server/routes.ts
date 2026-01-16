@@ -18,7 +18,17 @@ export async function registerRoutes(
   app.get(api.routes.list.path, async (req, res) => {
     const search = req.query.search as string | undefined;
     const routes = await storage.getBusRoutes(search);
-    res.json(routes);
+    
+    // Calculate waiting counts for each route based on subscriptions
+    const routesWithCounts = await Promise.all(routes.map(async (route) => {
+      const subs = await storage.getRouteSubscriptions(route.id);
+      return {
+        ...route,
+        waitingCount: subs.length
+      };
+    }));
+    
+    res.json(routesWithCounts);
   });
 
   app.get(api.routes.get.path, async (req, res) => {

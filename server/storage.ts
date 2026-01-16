@@ -28,6 +28,7 @@ export interface IStorage {
   getSubscriptions(userId: string): Promise<(Subscription & { route: BusRoute })[]>;
   createSubscription(userId: string, routeId: number): Promise<Subscription>;
   deleteSubscription(userId: string, routeId: number): Promise<void>;
+  getRouteSubscriptions(routeId: number): Promise<Subscription[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -115,6 +116,10 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(subscriptions)
       .where(and(eq(subscriptions.userId, userId), eq(subscriptions.routeId, routeId)));
+  }
+
+  async getRouteSubscriptions(routeId: number): Promise<Subscription[]> {
+    return await db.select().from(subscriptions).where(eq(subscriptions.routeId, routeId));
   }
 }
 
