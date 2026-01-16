@@ -29,9 +29,27 @@ export interface IStorage {
   createSubscription(userId: string, routeId: number): Promise<Subscription>;
   deleteSubscription(userId: string, routeId: number): Promise<void>;
   getRouteSubscriptions(routeId: number): Promise<Subscription[]>;
+  // User Preferences
+  getUser(id: string): Promise<User | undefined>;
+  updateUserPreferences(id: string, pinned: number[], hidden: number[]): Promise<User>;
 }
 
 export class DatabaseStorage implements IStorage {
+  // User
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async updateUserPreferences(id: string, pinned: number[], hidden: number[]): Promise<User> {
+    const [updated] = await db
+      .update(users)
+      .set({ pinnedRoutes: pinned, hiddenRoutes: hidden })
+      .where(eq(users.id, id))
+      .returning();
+    return updated;
+  }
+
   // Routes
   async getBusRoutes(search?: string): Promise<BusRoute[]> {
     // Basic search implementation

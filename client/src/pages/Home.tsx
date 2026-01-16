@@ -116,9 +116,17 @@ export default function Home() {
                 </div>
               ) : routes && routes.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {routes.map((route) => (
-                    <RouteCard key={route.id} route={route} showAdminControls={user?.role === 'admin'} />
-                  ))}
+                  {routes
+                    .sort((a, b) => {
+                      const aPinned = user?.pinnedRoutes?.includes(a.id);
+                      const bPinned = user?.pinnedRoutes?.includes(b.id);
+                      if (aPinned && !bPinned) return -1;
+                      if (!aPinned && bPinned) return 1;
+                      return 0;
+                    })
+                    .map((route) => (
+                      <RouteCard key={route.id} route={route} showAdminControls={user?.role === 'admin'} />
+                    ))}
                 </div>
               ) : (
                 <div className="text-center py-12">

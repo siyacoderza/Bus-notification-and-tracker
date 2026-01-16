@@ -130,6 +130,37 @@ export async function registerRoutes(
     res.status(204).send();
   });
 
+  // === User Preferences ===
+  app.post("/api/user/preferences/pin/:id", isAuthenticated, async (req: any, res) => {
+    const userId = req.user.claims.sub;
+    const routeId = Number(req.params.id);
+    const user = await storage.getUser(userId);
+    if (!user) return res.status(404).send("User not found");
+
+    const pinned = user.pinnedRoutes || [];
+    const newPinned = pinned.includes(routeId) 
+      ? pinned.filter(id => id !== routeId)
+      : [...pinned, routeId];
+    
+    await storage.updateUserPreferences(userId, newPinned, user.hiddenRoutes || []);
+    res.json({ pinnedRoutes: newPinned });
+  });
+
+  app.post("/api/user/preferences/hide/:id", isAuthenticated, async (req: any, res) => {
+    const userId = req.user.claims.sub;
+    const routeId = Number(req.params.id);
+    const user = await storage.getUser(userId);
+    if (!user) return res.status(404).send("User not found");
+
+    const hidden = user.hiddenRoutes || [];
+    const newHidden = hidden.includes(routeId)
+      ? hidden.filter(id => id !== routeId)
+      : [...hidden, routeId];
+    
+    await storage.updateUserPreferences(userId, user.pinnedRoutes || [], newHidden);
+    res.json({ hiddenRoutes: newHidden });
+  });
+
   // Seed Data
   await seedDatabase();
 
