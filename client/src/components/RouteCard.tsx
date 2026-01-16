@@ -117,9 +117,7 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
                 >
                   {isHidden ? <Eye className="h-4 w-4 text-destructive" /> : <EyeOff className="h-4 w-4" />}
                 </Button>
-                {user?.role === 'admin' && (
-                  <EditRouteDialog route={route} />
-                )}
+                <EditRouteDialog route={route} />
               </div>
             )}
           </div>

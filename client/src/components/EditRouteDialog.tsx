@@ -23,6 +23,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Edit2 } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 interface EditRouteDialogProps {
   route: BusRoute;
@@ -30,7 +31,10 @@ interface EditRouteDialogProps {
 
 export function EditRouteDialog({ route }: EditRouteDialogProps) {
   const [open, setOpen] = useState(false);
+  const { user } = useAuth();
   const updateRoute = useUpdateRoute();
+
+  if (user?.role !== 'admin') return null;
 
   const form = useForm<InsertBusRoute>({
     resolver: zodResolver(insertBusRouteSchema),
