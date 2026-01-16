@@ -2,12 +2,13 @@ import { type BusRoute } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Bus, Trash2, Users, Loader2, Pin, EyeOff, PinOff, Eye } from "lucide-react";
+import { MapPin, Bus, Trash2, Users, Loader2, Pin, EyeOff, PinOff, Eye, Edit2 } from "lucide-react";
 import { useSubscribe, useUnsubscribe, useSubscriptions } from "@/hooks/use-subscriptions";
 import { useAuth } from "@/hooks/use-auth";
 import { useDeleteRoute } from "@/hooks/use-routes";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { EditRouteDialog } from "./EditRouteDialog";
 
 interface RouteCardProps {
   route: BusRoute;
@@ -116,6 +117,9 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
                 >
                   {isHidden ? <Eye className="h-4 w-4 text-destructive" /> : <EyeOff className="h-4 w-4" />}
                 </Button>
+                {user?.role === 'admin' && (
+                  <EditRouteDialog route={route} />
+                )}
               </div>
             )}
           </div>
