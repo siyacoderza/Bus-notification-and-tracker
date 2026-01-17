@@ -4,6 +4,7 @@ import {
   notifications,
   subscriptions,
   users,
+  reviews,
   type BusRoute,
   type InsertBusRoute,
   type Notification,
