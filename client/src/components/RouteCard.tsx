@@ -120,7 +120,7 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
           <div className="flex justify-between items-start gap-4">
             <div className="flex flex-col gap-2">
               <Badge variant={route.isActive ? "outline" : "destructive"} className="w-fit">
-                {route.isActive ? "Active Service" : "Service Suspended"}
+                {route.isActive ? "Active Service" : "Inactive"}
               </Badge>
               {isPinned && (
                 <Badge variant="secondary" className="w-fit bg-secondary text-secondary-foreground flex items-center gap-1">
