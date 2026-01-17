@@ -240,4 +240,3 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
     </motion.div>
   );
 }
-}
