@@ -117,31 +117,31 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
         <div className={`absolute top-0 left-0 w-1 h-full bg-gradient-to-b ${isPinned ? 'from-secondary to-secondary/50' : 'from-primary to-primary/50'} group-hover:w-2 transition-all duration-300`} />
         
         <CardHeader className="pb-2">
-          <div className="flex justify-between items-start gap-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
             <div className="flex flex-col gap-2">
-              <Badge variant={route.isActive ? "outline" : "destructive"} className="w-fit">
+              <Badge variant={route.isActive ? "outline" : "destructive"} className="w-fit shrink-0">
                 {route.isActive ? "Active Service" : "Inactive"}
               </Badge>
               {isPinned && (
-                <Badge variant="secondary" className="w-fit bg-secondary text-secondary-foreground flex items-center gap-1">
+                <Badge variant="secondary" className="w-fit bg-secondary text-secondary-foreground flex items-center gap-1 shrink-0">
                   <Pin className="h-3 w-3" /> Pinned
                 </Badge>
               )}
             </div>
-            <div className="flex flex-col items-end gap-2">
-              <Badge variant="secondary" className="bg-secondary/20 text-secondary-foreground font-bold">
+            <div className="flex flex-col items-end gap-2 shrink-0">
+              <Badge variant="secondary" className="bg-secondary/20 text-secondary-foreground font-bold whitespace-nowrap">
                 {route.operatingCompany}
               </Badge>
-              <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground px-2 py-0.5 bg-muted rounded-full">
+              <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground px-2 py-0.5 bg-muted rounded-full whitespace-nowrap">
                 <Users className="h-3 w-3" />
                 <span>{waitingCount} waiting</span>
               </div>
               {user && (
-                <div className="flex gap-1">
+                <div className="flex flex-wrap justify-end gap-1">
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-8 w-8 hover:bg-secondary/10"
+                    className="h-8 w-8 hover:bg-secondary/10 shrink-0"
                     onClick={() => togglePin.mutate()}
                     disabled={togglePin.isPending}
                   >
@@ -150,7 +150,7 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-8 w-8 hover:bg-destructive/10"
+                    className="h-8 w-8 hover:bg-destructive/10 shrink-0"
                     onClick={() => toggleHide.mutate()}
                     disabled={toggleHide.isPending}
                   >
@@ -159,7 +159,7 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-8 w-8 hover:bg-primary/10"
+                    className="h-8 w-8 hover:bg-primary/10 shrink-0"
                     onClick={() => {
                       const url = `${window.location.origin}/route/${route.id}`;
                       navigator.clipboard.writeText(url);
@@ -177,7 +177,7 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
               )}
             </div>
           </div>
-          <CardTitle className="text-xl font-display text-primary">{route.name}</CardTitle>
+          <CardTitle className="text-xl font-display text-primary mt-2">{route.name}</CardTitle>
         </CardHeader>
         
         <CardContent className="space-y-4">
