@@ -10,6 +10,8 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { EditRouteDialog } from "./EditRouteDialog";
 
+import { ReviewList, ReviewForm } from "./reviews";
+
 interface RouteCardProps {
   route: BusRoute;
   showAdminControls?: boolean;
@@ -133,6 +135,11 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
           <span className="font-medium">{route.startLocation}</span>
           <span className="text-muted-foreground px-2">→</span>
           <span className="font-medium">{route.endLocation}</span>
+        </div>
+
+        <div className="pt-4 border-t border-border/40">
+          {user && <ReviewForm routeId={route.id} />}
+          <ReviewList routeId={route.id} />
         </div>
       </CardContent>
 

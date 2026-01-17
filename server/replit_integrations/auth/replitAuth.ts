@@ -51,12 +51,17 @@ function updateUserSession(
 }
 
 async function upsertUser(claims: any) {
+  // Check if this should be an admin based on email or other claims
+  const adminEmails = ["admin@mzansimove.co.za"]; // Add your email here to become admin
+  const role = adminEmails.includes(claims["email"]) ? "admin" : "passenger";
+
   await authStorage.upsertUser({
     id: claims["sub"],
     email: claims["email"],
     firstName: claims["first_name"],
     lastName: claims["last_name"],
     profileImageUrl: claims["profile_image_url"],
+    role: role,
   });
 }
 

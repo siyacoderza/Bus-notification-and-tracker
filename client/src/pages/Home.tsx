@@ -42,7 +42,13 @@ export default function Home() {
               <Bus className="h-8 w-8 text-secondary" />
               <span>MzansiMove</span>
             </div>
-            <div className="flex gap-4">
+            <div className="flex gap-4 items-center">
+              {user && (
+                <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                  <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
+                  <span className="text-sm font-medium">{user.role === 'admin' ? 'Administrator' : 'Passenger'}</span>
+                </div>
+              )}
               {!user ? (
                 <Button 
                   onClick={() => window.location.href = `${window.location.origin}/api/login`}
