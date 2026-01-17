@@ -37,37 +37,39 @@ export default function Home() {
         </div>
 
         <div className="max-w-7xl mx-auto relative z-10">
-          <nav className="flex justify-between items-center mb-16">
-            <div className="flex items-center gap-2 font-display text-2xl font-bold">
+          <nav className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-16">
+            <div className="flex items-center gap-2 font-display text-2xl font-bold shrink-0">
               <Bus className="h-8 w-8 text-secondary" />
               <span>MzansiMove</span>
             </div>
-            <div className="flex gap-4 items-center">
+            <div className="flex flex-wrap justify-center sm:justify-end gap-3 items-center">
               {user && (
-                <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm shrink-0">
                   <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
                   <span className="text-sm font-medium">{user.role === 'admin' ? 'Administrator' : 'Passenger'}</span>
                 </div>
               )}
-              {!user ? (
-                <Button 
-                  onClick={() => window.location.href = `${window.location.origin}/api/login`}
-                  variant="secondary" 
-                  className="font-bold shadow-lg shadow-black/20"
-                  data-testid="button-operator-login"
-                >
-                  Operator Login
-                </Button>
-              ) : (
-                <Button 
-                  onClick={() => window.location.href = `${window.location.origin}/api/logout`}
-                  variant="outline" 
-                  className="bg-transparent border-white/30 text-white hover:bg-white/10"
-                  data-testid="button-logout"
-                >
-                  Log Out
-                </Button>
-              )}
+              <div className="flex gap-2">
+                {!user ? (
+                  <Button 
+                    onClick={() => window.location.href = `${window.location.origin}/api/login`}
+                    variant="secondary" 
+                    className="font-bold shadow-lg shadow-black/20"
+                    data-testid="button-operator-login"
+                  >
+                    Operator Login
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={() => window.location.href = `${window.location.origin}/api/logout`}
+                    variant="outline" 
+                    className="bg-transparent border-white/30 text-white hover:bg-white/10"
+                    data-testid="button-logout"
+                  >
+                    Log Out
+                  </Button>
+                )}
+              </div>
             </div>
           </nav>
 
