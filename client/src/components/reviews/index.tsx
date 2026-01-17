@@ -28,7 +28,7 @@ export function ReviewList({ routeId }: { routeId: number }) {
             <CardHeader className="flex flex-row items-center gap-3 p-4 pb-2">
               <Avatar className="h-8 w-8">
                 <AvatarImage src={review.user.profileImageUrl || undefined} />
-                <AvatarFallback>{review.user.username[0]}</AvatarFallback>
+                <AvatarFallback>{(review.user.firstName || review.user.email || 'U')[0]}</AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <div className="flex items-center justify-between">
