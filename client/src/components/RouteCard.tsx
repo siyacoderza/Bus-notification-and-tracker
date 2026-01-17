@@ -2,7 +2,7 @@ import { type BusRoute } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Bus, Trash2, Users, Loader2, Pin, EyeOff, PinOff, Eye, Edit2 } from "lucide-react";
+import { MapPin, Bus, Trash2, Users, Loader2, Pin, EyeOff, PinOff, Eye, Edit2, Share2 } from "lucide-react";
 import { useSubscribe, useUnsubscribe, useSubscriptions } from "@/hooks/use-subscriptions";
 import { useAuth } from "@/hooks/use-auth";
 import { useDeleteRoute } from "@/hooks/use-routes";
@@ -155,6 +155,22 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
                     disabled={toggleHide.isPending}
                   >
                     {isHidden ? <Eye className="h-4 w-4 text-destructive" /> : <EyeOff className="h-4 w-4" />}
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 hover:bg-primary/10"
+                    onClick={() => {
+                      const url = `${window.location.origin}/route/${route.id}`;
+                      navigator.clipboard.writeText(url);
+                      toast({
+                        title: "Link copied!",
+                        description: "Route link copied to clipboard.",
+                      });
+                    }}
+                    data-testid={`button-share-route-${route.id}`}
+                  >
+                    <Share2 className="h-4 w-4" />
                   </Button>
                   <EditRouteDialog route={route} />
                 </div>

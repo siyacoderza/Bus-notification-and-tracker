@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
+import RouteDetails from "@/pages/RouteDetails";
 import RoutesPage from "@/pages/Routes";
 import NotificationsPage from "@/pages/Notifications";
 import SubscriptionsPage from "@/pages/Subscriptions";
@@ -16,6 +17,7 @@ function Router() {
       <main className="flex-grow">
         <Switch>
           <Route path="/" component={Home} />
+          <Route path="/route/:id" component={RouteDetails} />
           <Route path="/routes" component={RoutesPage} />
           <Route path="/notifications" component={NotificationsPage} />
           <Route path="/subscriptions" component={SubscriptionsPage} />
