@@ -107,11 +107,8 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
 
   return (
     <motion.div
-      drag="x"
-      dragConstraints={{ left: -100, right: 0 }}
-      onDragEnd={handleDragEnd}
       animate={controls}
-      className="touch-pan-y"
+      className="w-full"
     >
       <Card className={`group hover:shadow-lg hover:border-primary/20 transition-all duration-300 relative overflow-hidden bg-white/50 backdrop-blur-sm ${isPinned ? 'ring-2 ring-primary/20' : ''}`}>
         <div className={`absolute top-0 left-0 w-1 h-full bg-gradient-to-b ${isPinned ? 'from-secondary to-secondary/50' : 'from-primary to-primary/50'} group-hover:w-2 transition-all duration-300`} />
