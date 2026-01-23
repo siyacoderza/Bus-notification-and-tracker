@@ -7,9 +7,10 @@ import { motion } from "framer-motion";
 interface NotificationListProps {
   notifications: (Notification & { routeName?: string })[];
   loading?: boolean;
+  showNewBadge?: boolean;
 }
 
-export function NotificationList({ notifications, loading }: NotificationListProps) {
+export function NotificationList({ notifications, loading, showNewBadge }: NotificationListProps) {
   if (loading) {
     return (
       <div className="space-y-4">
@@ -70,6 +71,9 @@ export function NotificationList({ notifications, loading }: NotificationListPro
                       <Badge variant="outline" className="bg-background/50">
                         {notification.routeName}
                       </Badge>
+                    )}
+                    {showNewBadge && (
+                      <Badge className="bg-secondary text-secondary-foreground animate-pulse">NEW</Badge>
                     )}
                   </div>
                   <div className="flex items-center text-xs text-muted-foreground">

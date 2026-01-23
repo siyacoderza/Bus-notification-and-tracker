@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, type InsertNotification } from "@shared/routes";
+import { api } from "@shared/routes";
+import { type InsertNotification } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 
 export function useNotifications(onlyMyRoutes = false) {
@@ -11,7 +12,7 @@ export function useNotifications(onlyMyRoutes = false) {
       if (!res.ok) throw new Error("Failed to fetch notifications");
       return api.notifications.list.responses[200].parse(await res.json());
     },
-    refetchInterval: 30000, // Poll every 30s for updates
+    refetchInterval: 5000, // Poll every 5s for truly "instant" updates
   });
 }
 

@@ -182,7 +182,11 @@ export default function Home() {
             </Link>
           </div>
           
-          <NotificationList notifications={criticalAlerts} loading={isLoadingNotifications} />
+          <NotificationList 
+            notifications={criticalAlerts} 
+            loading={isLoadingNotifications} 
+            showNewBadge={true}
+          />
         </div>
       </div>
     </div>
