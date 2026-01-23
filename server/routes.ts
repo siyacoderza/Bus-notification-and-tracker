@@ -205,7 +205,9 @@ async function seedDatabase() {
       startLocation: "Sandton Station",
       endLocation: "Gandhi Square",
       operatingCompany: "Rea Vaya",
-      isActive: true
+      isActive: true,
+      frequency: "Every 15 mins",
+      schedule: ["06:00", "06:15", "06:30", "06:45", "07:00"]
     });
 
     const r2 = await storage.createBusRoute({
@@ -214,7 +216,9 @@ async function seedDatabase() {
       startLocation: "V&A Waterfront",
       endLocation: "Camps Bay Beach",
       operatingCompany: "MyCiTi",
-      isActive: true
+      isActive: true,
+      frequency: "Every 20 mins",
+      schedule: ["07:00", "07:20", "07:40", "08:00"]
     });
 
     const r3 = await storage.createBusRoute({
@@ -223,7 +227,9 @@ async function seedDatabase() {
       startLocation: "Hatfield Gautrain",
       endLocation: "Church Square",
       operatingCompany: "A Re Yeng",
-      isActive: true
+      isActive: true,
+      frequency: "Every 10 mins",
+      schedule: ["06:00", "06:10", "06:20", "06:30"]
     });
 
     // Create Notifications

@@ -2,7 +2,7 @@ import { type BusRoute } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Bus, Trash2, Users, Loader2, Pin, EyeOff, PinOff, Eye, Edit2, Share2 } from "lucide-react";
+import { MapPin, Bus, Trash2, Users, Loader2, Pin, EyeOff, PinOff, Eye, Edit2, Share2, Clock } from "lucide-react";
 import { useSubscribe, useUnsubscribe, useSubscriptions } from "@/hooks/use-subscriptions";
 import { useAuth } from "@/hooks/use-auth";
 import { useDeleteRoute } from "@/hooks/use-routes";
@@ -186,6 +186,32 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
             <span className="text-muted-foreground px-2">→</span>
             <span className="font-medium">{route.endLocation}</span>
           </div>
+
+          {(route.frequency || (route.schedule && route.schedule.length > 0)) && (
+            <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 space-y-3">
+              <div className="flex items-center gap-2 text-primary font-bold">
+                <Clock className="h-4 w-4" />
+                <span>Live Schedule</span>
+              </div>
+              
+              {route.frequency && (
+                <div className="text-sm font-medium flex items-center gap-2">
+                  <span className="text-muted-foreground">Frequency:</span>
+                  <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20">{route.frequency}</Badge>
+                </div>
+              )}
+
+              {route.schedule && route.schedule.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {route.schedule.map((time, idx) => (
+                    <Badge key={idx} variant="outline" className="font-mono bg-white">
+                      {time}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="pt-4 border-t border-border/40">
             {user && <ReviewForm routeId={route.id} />}

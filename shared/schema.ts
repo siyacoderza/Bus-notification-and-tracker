@@ -16,6 +16,8 @@ export const busRoutes = pgTable("bus_routes", {
   operatingCompany: text("operating_company").notNull(), // e.g., "Putco", "Rea Vaya"
   isActive: boolean("is_active").default(true),
   waitingCount: integer("waiting_count").default(0),
+  frequency: text("frequency"), // e.g., "Every 15 mins"
+  schedule: text("schedule").array(), // e.g., ["06:00", "06:30", "07:00"]
 });
 
 export const notifications = pgTable("notifications", {
