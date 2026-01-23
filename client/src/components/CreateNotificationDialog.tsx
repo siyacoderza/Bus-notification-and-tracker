@@ -124,6 +124,40 @@ export function CreateNotificationDialog() {
               )}
             />
 
+            {form.watch("type") === "delay" && (
+              <FormItem>
+                <FormLabel>Expected Delay</FormLabel>
+                <Select 
+                  onValueChange={(val) => {
+                    const currentMessage = form.getValues("message");
+                    const delayText = `Expected delay: ${val}.`;
+                    if (!currentMessage.includes("Expected delay:")) {
+                      form.setValue("message", currentMessage ? `${currentMessage}\n${delayText}` : delayText);
+                    } else {
+                      form.setValue("message", currentMessage.replace(/Expected delay: .*\./, delayText));
+                    }
+                  }}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select delay duration" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="5 minutes">5 minutes</SelectItem>
+                    <SelectItem value="10 minutes">10 minutes</SelectItem>
+                    <SelectItem value="15 minutes">15 minutes</SelectItem>
+                    <SelectItem value="20 minutes">20 minutes</SelectItem>
+                    <SelectItem value="30 minutes">30 minutes</SelectItem>
+                    <SelectItem value="45 minutes">45 minutes</SelectItem>
+                    <SelectItem value="1 hour">1 hour</SelectItem>
+                    <SelectItem value="Indefinite">Indefinite</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+
             <FormField
               control={form.control}
               name="message"
