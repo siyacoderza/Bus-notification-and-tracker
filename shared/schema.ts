@@ -47,11 +47,35 @@ export const reviews = pgTable("reviews", {
 
 // === RELATIONS ===
 
+export const messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  routeId: integer("route_id").notNull().references(() => busRoutes.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const busRoutesRelations = relations(busRoutes, ({ many }) => ({
   notifications: many(notifications),
   subscriptions: many(subscriptions),
   reviews: many(reviews),
+  messages: many(messages),
 }));
+
+export const messagesRelations = relations(messages, ({ one }) => ({
+  route: one(busRoutes, {
+    fields: [messages.routeId],
+    references: [busRoutes.id],
+  }),
+  user: one(users, {
+    fields: [messages.userId],
+    references: [users.id],
+  }),
+}));
+
+export const insertMessageSchema = createInsertSchema(messages).omit({ id: true, createdAt: true });
+export type Message = typeof messages.$inferSelect;
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
 
 export const reviewsRelations = relations(reviews, ({ one }) => ({
   route: one(busRoutes, {

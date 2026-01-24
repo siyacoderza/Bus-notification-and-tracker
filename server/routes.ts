@@ -187,6 +187,28 @@ export async function registerRoutes(
     res.json({ hiddenRoutes: newHidden });
   });
 
+  app.get("/api/routes/:id/messages", async (req, res) => {
+    const routeId = Number(req.params.id);
+    const messages = await storage.getRouteMessages(routeId);
+    res.json(messages);
+  });
+
+  app.post("/api/routes/:id/messages", isAuthenticated, async (req: any, res) => {
+    try {
+      const routeId = Number(req.params.id);
+      const userId = req.user.claims.sub;
+      const input = {
+        routeId,
+        userId,
+        content: req.body.content
+      };
+      const message = await storage.createMessage(input);
+      res.status(201).json(message);
+    } catch (err) {
+      res.status(500).send("Error sending message");
+    }
+  });
+
   // Seed Data
   await seedDatabase();
 
