@@ -85,13 +85,13 @@ export function RouteChat({ routeId }: { routeId: number }) {
                   <div key={msg.id} className={`flex gap-3 ${isMe ? "flex-row-reverse" : ""}`}>
                     <Avatar className="h-8 w-8 shrink-0">
                       <AvatarFallback className={isOperator ? "bg-secondary text-secondary-foreground" : ""}>
-                        {msg.user.username?.substring(0, 2).toUpperCase()}
+                        {(msg.user.firstName || msg.user.email || "P").substring(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div className={`flex flex-col max-w-[80%] ${isMe ? "items-end" : ""}`}>
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-xs font-bold">
-                          {isOperator ? "Operator" : msg.user.username}
+                          {isOperator ? "Operator" : (msg.user.firstName || msg.user.email || "Passenger")}
                         </span>
                         <span className="text-[10px] text-muted-foreground">
                           {format(new Date(msg.createdAt!), "HH:mm")}
