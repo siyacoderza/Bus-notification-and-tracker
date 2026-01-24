@@ -147,20 +147,25 @@ export default function Home() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {/* Feature Cards */}
-          <div className="bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/50">
+          <button 
+            onClick={() => document.querySelector('input[data-testid="input-route-search"]')?.scrollIntoView({ behavior: 'smooth' })}
+            className="text-left bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/50 hover-elevate active-elevate-2 transition-all"
+          >
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4">
               <Bus className="h-6 w-6" />
             </div>
-            <h3 className="font-display text-xl font-bold mb-2">Live Schedules</h3>
+            <h3 className="font-display text-xl font-bold mb-2">Find a Route</h3>
             <p className="text-muted-foreground">Up-to-date departure times for all major routes across the metro.</p>
-          </div>
-          <div className="bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/50">
-            <div className="w-12 h-12 rounded-xl bg-secondary/20 flex items-center justify-center text-secondary-foreground mb-4">
-              <Bell className="h-6 w-6" />
-            </div>
-            <h3 className="font-display text-xl font-bold mb-2">Instant Alerts</h3>
-            <p className="text-muted-foreground">Get notified immediately about delays, strikes, or route changes.</p>
-          </div>
+          </button>
+          <Link href="/notifications">
+            <button className="w-full text-left bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/50 hover-elevate active-elevate-2 transition-all">
+              <div className="w-12 h-12 rounded-xl bg-secondary/20 flex items-center justify-center text-secondary-foreground mb-4">
+                <Bell className="h-6 w-6" />
+              </div>
+              <h3 className="font-display text-xl font-bold mb-2">Live Alerts</h3>
+              <p className="text-muted-foreground">Get notified immediately about delays, strikes, or route changes.</p>
+            </button>
+          </Link>
           <div className="bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/50">
             <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center text-accent-foreground mb-4">
               <Star className="h-6 w-6" />
