@@ -1,10 +1,11 @@
 import { db } from "./db";
-import {
+  import {
   busRoutes,
   notifications,
   subscriptions,
   users,
   reviews,
+  messages,
   type BusRoute,
   type InsertBusRoute,
   type Notification,
@@ -14,6 +15,8 @@ import {
   type User,
   type Review,
   type InsertReview,
+  type Message,
+  type InsertMessage,
 } from "@shared/schema";
 import { eq, desc, and } from "drizzle-orm";
 
@@ -38,6 +41,10 @@ export interface IStorage {
   // Reviews
   getRouteReviews(routeId: number): Promise<(Review & { user: User })[]>;
   createReview(review: InsertReview): Promise<Review>;
+
+  // Chat
+  getRouteMessages(routeId: number): Promise<(Message & { user: User })[]>;
+  createMessage(message: InsertMessage): Promise<Message>;
 
   // User Preferences
   getUser(id: string): Promise<User | undefined>;
@@ -167,6 +174,29 @@ export class DatabaseStorage implements IStorage {
   async createReview(review: InsertReview): Promise<Review> {
     const [newReview] = await db.insert(reviews).values(review).returning();
     return newReview;
+  }
+
+  // Chat
+  async getRouteMessages(routeId: number): Promise<(Message & { user: User })[]> {
+    const results = await db
+      .select({
+        message: messages,
+        user: users,
+      })
+      .from(messages)
+      .innerJoin(users, eq(messages.userId, users.id))
+      .where(eq(messages.routeId, routeId))
+      .orderBy(desc(messages.createdAt));
+
+    return results.map(r => ({
+      ...r.message,
+      user: r.user,
+    }));
+  }
+
+  async createMessage(message: InsertMessage): Promise<Message> {
+    const [newMessage] = await db.insert(messages).values(message).returning();
+    return newMessage;
   }
 }
 

@@ -3,6 +3,7 @@ import { RouteCard } from "@/components/RouteCard";
 import { Loader2, ArrowLeft, Bus } from "lucide-react";
 import { Link, useRoute as useWouterRoute } from "wouter";
 import { Button } from "@/components/ui/button";
+import { RouteChat } from "@/components/RouteChat";
 
 export default function RouteDetails() {
   const [, params] = useWouterRoute("/route/:id");
@@ -55,6 +56,7 @@ export default function RouteDetails() {
 
       <div className="max-w-3xl mx-auto px-4 -mt-8">
         <RouteCard route={route} showAdminControls={false} />
+        <RouteChat routeId={route.id} />
       </div>
     </div>
   );
