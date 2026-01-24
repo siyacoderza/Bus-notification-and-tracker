@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { NotificationList } from "@/components/NotificationList";
 import { useNotifications } from "@/hooks/use-notifications";
-import { ArrowRight, Bus, Bell, Shield, Search, Loader2 } from "lucide-react";
+import { ArrowRight, Bus, Bell, Star, Search, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useRoutes } from "@/hooks/use-routes";
@@ -163,10 +163,10 @@ export default function Home() {
           </div>
           <div className="bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/50">
             <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center text-accent-foreground mb-4">
-              <Shield className="h-6 w-6" />
+              <Star className="h-6 w-6" />
             </div>
-            <h3 className="font-display text-xl font-bold mb-2">Verified Info</h3>
-            <p className="text-muted-foreground">Updates sourced directly from official operators and transport authorities.</p>
+            <h3 className="font-display text-xl font-bold mb-2">Route Reviews</h3>
+            <p className="text-muted-foreground">Hear from fellow commuters and share your own travel experiences.</p>
           </div>
         </div>
 
