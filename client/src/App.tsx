@@ -11,6 +11,8 @@ import NotificationsPage from "@/pages/Notifications";
 import SubscriptionsPage from "@/pages/Subscriptions";
 import { Footer } from "@/components/Footer";
 
+import AuthPage from "@/pages/AuthPage";
+
 function Router() {
   return (
     <div className="flex flex-col min-h-screen">
@@ -21,6 +23,7 @@ function Router() {
           <Route path="/routes" component={RoutesPage} />
           <Route path="/notifications" component={NotificationsPage} />
           <Route path="/subscriptions" component={SubscriptionsPage} />
+          <Route path="/login" component={AuthPage} />
           <Route component={NotFound} />
         </Switch>
       </main>

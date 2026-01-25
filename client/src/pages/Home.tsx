@@ -51,14 +51,15 @@ export default function Home() {
               )}
               <div className="flex gap-2">
                 {!user ? (
-                  <Button 
-                    onClick={() => window.location.href = `${window.location.origin}/api/login`}
-                    variant="secondary" 
-                    className="font-bold shadow-lg shadow-black/20"
-                    data-testid="button-operator-login"
-                  >
-                    Operator Login
-                  </Button>
+                  <Link href="/login">
+                    <Button 
+                      variant="secondary" 
+                      className="font-bold shadow-lg shadow-black/20"
+                      data-testid="button-operator-login"
+                    >
+                      Login / Sign Up
+                    </Button>
+                  </Link>
                 ) : (
                   <Button 
                     onClick={() => window.location.href = `${window.location.origin}/api/logout`}

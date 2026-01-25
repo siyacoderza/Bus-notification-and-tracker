@@ -2,11 +2,15 @@ import * as client from "openid-client";
 import { Strategy, type VerifyFunction } from "openid-client/passport";
 
 import passport from "passport";
+import { Strategy as CustomStrategy } from "passport-custom";
 import session from "express-session";
 import type { Express, RequestHandler } from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { authStorage } from "./storage";
+import { users, otpStore } from "@shared/schema";
+import { eq, and, gt } from "drizzle-orm";
+import { db } from "../../db";
 
 const getOidcConfig = memoize(
   async () => {
@@ -40,36 +44,47 @@ export function getSession() {
   });
 }
 
-function updateUserSession(
-  user: any,
-  tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers
-) {
-  user.claims = tokens.claims();
-  user.access_token = tokens.access_token;
-  user.refresh_token = tokens.refresh_token;
-  user.expires_at = user.claims?.exp;
-}
-
-async function upsertUser(claims: any) {
-  // Check if this should be an admin based on email or other claims
-  const adminEmails = ["admin@mzansimove.co.za"]; // Add your email here to become admin
-  const role = adminEmails.includes(claims["email"]) ? "admin" : "passenger";
-
-  await authStorage.upsertUser({
-    id: claims["sub"],
-    email: claims["email"],
-    firstName: claims["first_name"],
-    lastName: claims["last_name"],
-    profileImageUrl: claims["profile_image_url"],
-    role: role,
-  });
-}
-
 export async function setupAuth(app: Express) {
   app.set("trust proxy", 1);
   app.use(getSession());
   app.use(passport.initialize());
   app.use(passport.session());
+
+  passport.use("otp", new CustomStrategy(async (req: any, done: any) => {
+    const { phoneNumber, code } = req.body;
+    
+    try {
+      // 1. Verify OTP
+      const [otp] = await db.select()
+        .from(otpStore)
+        .where(and(
+          eq(otpStore.phoneNumber, phoneNumber),
+          eq(otpStore.code, code),
+          gt(otpStore.expiresAt, new Date())
+        ));
+
+      if (!otp) {
+        return done(null, false, { message: "Invalid or expired OTP" });
+      }
+
+      // 2. Clear OTP
+      await db.delete(otpStore).where(eq(otpStore.id, otp.id));
+
+      // 3. Find or Create User
+      let [user] = await db.select().from(users).where(eq(users.phoneNumber, phoneNumber));
+      if (!user) {
+        [user] = await db.insert(users).values({
+          phoneNumber,
+          firstName: phoneNumber, // Cellphone number as default username
+          role: "passenger"
+        }).returning();
+      }
+
+      return done(null, { id: user.id, phoneNumber: user.phoneNumber });
+    } catch (err) {
+      return done(err);
+    }
+  }));
 
   const config = await getOidcConfig();
 
@@ -77,16 +92,33 @@ export async function setupAuth(app: Express) {
     tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers,
     verified: passport.AuthenticateCallback
   ) => {
-    const user = {};
-    updateUserSession(user, tokens);
-    await upsertUser(tokens.claims());
-    verified(null, user);
+    const claims = tokens.claims();
+    if (!claims) return verified(new Error("No claims found"));
+    
+    const adminEmails = ["admin@mzansimove.co.za"];
+    const role = adminEmails.includes(claims.email as string) ? "admin" : "passenger";
+
+    await authStorage.upsertUser({
+      id: claims.sub,
+      email: claims.email as string,
+      firstName: claims.first_name as string,
+      lastName: claims.last_name as string,
+      profileImageUrl: claims.profile_image_url as string,
+      role: role,
+    });
+
+    verified(null, { 
+      id: claims.sub, 
+      claims,
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      expires_at: claims.exp
+    });
   };
 
   // Keep track of registered strategies
   const registeredStrategies = new Set<string>();
 
-  // Helper function to ensure strategy exists for a domain
   const ensureStrategy = (domain: string) => {
     const strategyName = `replitauth:${domain}`;
     if (!registeredStrategies.has(strategyName)) {
@@ -104,8 +136,8 @@ export async function setupAuth(app: Express) {
     }
   };
 
-  passport.serializeUser((user: Express.User, cb) => cb(null, user));
-  passport.deserializeUser((user: Express.User, cb) => cb(null, user));
+  passport.serializeUser((user: any, cb) => cb(null, user));
+  passport.deserializeUser((user: any, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
     ensureStrategy(req.hostname);
@@ -123,43 +155,27 @@ export async function setupAuth(app: Express) {
     })(req, res, next);
   });
 
+  app.post("/api/auth/otp/login", (req, res, next) => {
+    passport.authenticate("otp", (err: any, user: any, info: any) => {
+      if (err) return next(err);
+      if (!user) return res.status(401).json({ message: info?.message || "Login failed" });
+      req.logIn(user, (err) => {
+        if (err) return next(err);
+        res.json({ message: "Logged in successfully", user });
+      });
+    })(req, res, next);
+  });
+
   app.get("/api/logout", (req, res) => {
     req.logout(() => {
-      res.redirect(
-        client.buildEndSessionUrl(config, {
-          client_id: process.env.REPL_ID!,
-          post_logout_redirect_uri: `${req.protocol}://${req.hostname}`,
-        }).href
-      );
+      res.redirect("/");
     });
   });
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
-  const user = req.user as any;
-
-  if (!req.isAuthenticated() || !user.expires_at) {
+  if (!req.isAuthenticated()) {
     return res.status(401).json({ message: "Unauthorized" });
   }
-
-  const now = Math.floor(Date.now() / 1000);
-  if (now <= user.expires_at) {
-    return next();
-  }
-
-  const refreshToken = user.refresh_token;
-  if (!refreshToken) {
-    res.status(401).json({ message: "Unauthorized" });
-    return;
-  }
-
-  try {
-    const config = await getOidcConfig();
-    const tokenResponse = await client.refreshTokenGrant(config, refreshToken);
-    updateUserSession(user, tokenResponse);
-    return next();
-  } catch (error) {
-    res.status(401).json({ message: "Unauthorized" });
-    return;
-  }
+  return next();
 };
