@@ -58,7 +58,7 @@ export const messages = pgTable("messages", {
 export const busPositions = pgTable("bus_positions", {
   id: serial("id").primaryKey(),
   routeId: integer("route_id").notNull().references(() => busRoutes.id),
-  busId: text("bus_id").notNull(),
+  busId: text("bus_id").unique().notNull(),
   lat: text("lat").notNull(),
   lng: text("lng").notNull(),
   speed: integer("speed"),

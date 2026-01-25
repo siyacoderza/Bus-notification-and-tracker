@@ -1,10 +1,11 @@
 import { db } from "./db";
-  import {
+import {
   busRoutes,
   notifications,
   subscriptions,
   users,
   reviews,
+  messages,
   busPositions,
   type BusRoute,
   type InsertBusRoute,
@@ -215,7 +216,7 @@ export class DatabaseStorage implements IStorage {
       .insert(busPositions)
       .values(position)
       .onConflictDoUpdate({
-        target: [busPositions.routeId, busPositions.busId],
+        target: busPositions.busId,
         set: {
           lat: position.lat,
           lng: position.lng,

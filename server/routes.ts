@@ -218,6 +218,21 @@ export async function registerRoutes(
   // Seed Data
   await seedDatabase();
 
+  // Simulated live bus movement for demo
+  setInterval(async () => {
+    const routes = await storage.getBusRoutes();
+    for (const route of routes) {
+      await storage.updateBusPosition({
+        routeId: route.id,
+        busId: `BUS-${route.id}-1`,
+        lat: (-26.1076 + (Math.random() - 0.5) * 0.01).toString(),
+        lng: (28.0567 + (Math.random() - 0.5) * 0.01).toString(),
+        speed: Math.floor(Math.random() * 60) + 20,
+        bearing: Math.floor(Math.random() * 360)
+      });
+    }
+  }, 5000);
+
   return httpServer;
 }
 
