@@ -209,6 +209,12 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/routes/:id/positions", async (req, res) => {
+    const routeId = Number(req.params.id);
+    const positions = await storage.getBusPositions(routeId);
+    res.json(positions);
+  });
+
   // Seed Data
   await seedDatabase();
 

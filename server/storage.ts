@@ -5,7 +5,7 @@ import { db } from "./db";
   subscriptions,
   users,
   reviews,
-  messages,
+  busPositions,
   type BusRoute,
   type InsertBusRoute,
   type Notification,
@@ -17,6 +17,8 @@ import { db } from "./db";
   type InsertReview,
   type Message,
   type InsertMessage,
+  type BusPosition,
+  type InsertBusPosition,
 } from "@shared/schema";
 import { eq, desc, and } from "drizzle-orm";
 
@@ -45,6 +47,10 @@ export interface IStorage {
   // Chat
   getRouteMessages(routeId: number): Promise<(Message & { user: User })[]>;
   createMessage(message: InsertMessage): Promise<Message>;
+
+  // Bus Positions
+  getBusPositions(routeId: number): Promise<BusPosition[]>;
+  updateBusPosition(position: InsertBusPosition): Promise<BusPosition>;
 
   // User Preferences
   getUser(id: string): Promise<User | undefined>;
@@ -197,6 +203,29 @@ export class DatabaseStorage implements IStorage {
   async createMessage(message: InsertMessage): Promise<Message> {
     const [newMessage] = await db.insert(messages).values(message).returning();
     return newMessage;
+  }
+
+  // Bus Positions
+  async getBusPositions(routeId: number): Promise<BusPosition[]> {
+    return await db.select().from(busPositions).where(eq(busPositions.routeId, routeId));
+  }
+
+  async updateBusPosition(position: InsertBusPosition): Promise<BusPosition> {
+    const [updated] = await db
+      .insert(busPositions)
+      .values(position)
+      .onConflictDoUpdate({
+        target: [busPositions.routeId, busPositions.busId],
+        set: {
+          lat: position.lat,
+          lng: position.lng,
+          speed: position.speed,
+          bearing: position.bearing,
+          lastUpdate: new Date(),
+        },
+      })
+      .returning();
+    return updated;
   }
 }
 

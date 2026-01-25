@@ -55,12 +55,35 @@ export const messages = pgTable("messages", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const busPositions = pgTable("bus_positions", {
+  id: serial("id").primaryKey(),
+  routeId: integer("route_id").notNull().references(() => busRoutes.id),
+  busId: text("bus_id").notNull(),
+  lat: text("lat").notNull(),
+  lng: text("lng").notNull(),
+  speed: integer("speed"),
+  bearing: integer("bearing"),
+  lastUpdate: timestamp("last_update").defaultNow(),
+});
+
 export const busRoutesRelations = relations(busRoutes, ({ many }) => ({
   notifications: many(notifications),
   subscriptions: many(subscriptions),
   reviews: many(reviews),
   messages: many(messages),
+  positions: many(busPositions),
 }));
+
+export const busPositionsRelations = relations(busPositions, ({ one }) => ({
+  route: one(busRoutes, {
+    fields: [busPositions.routeId],
+    references: [busRoutes.id],
+  }),
+}));
+
+export const insertBusPositionSchema = createInsertSchema(busPositions).omit({ id: true, lastUpdate: true });
+export type BusPosition = typeof busPositions.$inferSelect;
+export type InsertBusPosition = z.infer<typeof insertBusPositionSchema>;
 
 export const messagesRelations = relations(messages, ({ one }) => ({
   route: one(busRoutes, {
