@@ -43,34 +43,7 @@ export default function Home() {
               <span>MzansiMove</span>
             </div>
             <div className="flex flex-wrap justify-center sm:justify-end gap-3 items-center">
-              {user && (
-                <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm shrink-0">
-                  <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
-                  <span className="text-sm font-medium">{user.role === 'admin' ? 'Administrator' : 'Passenger'}</span>
-                </div>
-              )}
-              <div className="flex gap-2">
-                {!user ? (
-                  <Link href="/login">
-                    <Button 
-                      variant="secondary" 
-                      className="font-bold shadow-lg shadow-black/20"
-                      data-testid="button-operator-login"
-                    >
-                      Login / Sign Up
-                    </Button>
-                  </Link>
-                ) : (
-                  <Button 
-                    onClick={() => window.location.href = `${window.location.origin}/api/logout`}
-                    variant="outline" 
-                    className="bg-transparent border-white/30 text-white hover:bg-white/10"
-                    data-testid="button-logout"
-                  >
-                    Log Out
-                  </Button>
-                )}
-              </div>
+              {/* Login disabled by request */}
             </div>
           </nav>
 

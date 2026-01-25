@@ -23,7 +23,6 @@ function Router() {
           <Route path="/routes" component={RoutesPage} />
           <Route path="/notifications" component={NotificationsPage} />
           <Route path="/subscriptions" component={SubscriptionsPage} />
-          <Route path="/login" component={AuthPage} />
           <Route component={NotFound} />
         </Switch>
       </main>
