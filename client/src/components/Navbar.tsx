@@ -1,14 +1,32 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { Bus, Menu, X } from "lucide-react";
+import { Bus, Menu, X, Share2 } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useToast } from "@/hooks/use-toast";
 
 export function Navbar() {
   const { user } = useAuth();
   const [location] = useLocation();
   const [open, setOpen] = useState(false);
+  const { toast } = useToast();
+
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: 'MzansiMove',
+        text: 'Real-time bus schedules and alerts for South Africa.',
+        url: window.location.origin,
+      }).catch(() => {
+        navigator.clipboard.writeText(window.location.origin);
+        toast({ title: "Link Copied!", description: "App link copied to clipboard." });
+      });
+    } else {
+      navigator.clipboard.writeText(window.location.origin);
+      toast({ title: "Link Copied!", description: "App link copied to clipboard." });
+    }
+  };
 
   const links = [
     { href: "/routes", label: "Routes" },
@@ -37,19 +55,19 @@ export function Navbar() {
               </Link>
             ))}
             
-            {!user ? (
-              <Button onClick={() => window.location.href = "/api/login"} size="sm">
-                Log In
-              </Button>
-            ) : (
-              <Button onClick={() => window.location.href = "/api/logout"} variant="ghost" size="sm">
-                Log Out
-              </Button>
-            )}
+            <Button onClick={handleShare} variant="outline" size="sm" className="gap-2">
+              <Share2 className="h-4 w-4" />
+              Share
+            </Button>
+
+            {/* Login disabled by request */}
           </nav>
 
           {/* Mobile Nav */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center gap-2">
+            <Button onClick={handleShare} variant="ghost" size="icon">
+              <Share2 className="h-5 w-5" />
+            </Button>
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
@@ -68,16 +86,10 @@ export function Navbar() {
                       </span>
                     </Link>
                   ))}
+                  
                   <div className="h-px bg-border my-2" />
-                  {!user ? (
-                    <Button onClick={() => window.location.href = "/api/login"}>
-                      Log In
-                    </Button>
-                  ) : (
-                    <Button onClick={() => window.location.href = "/api/logout"} variant="outline">
-                      Log Out
-                    </Button>
-                  )}
+                  
+                  {/* Login disabled by request */}
                 </div>
               </SheetContent>
             </Sheet>
