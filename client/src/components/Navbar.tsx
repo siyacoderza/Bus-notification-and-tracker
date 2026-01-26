@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { Bus, Home, MapPin, Bell, Share2, Menu } from "lucide-react";
+import { Bus, Home, MapPin, Bell, Share2, Menu, Star } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useToast } from "@/hooks/use-toast";
@@ -32,6 +32,7 @@ export function Navbar() {
     { href: "/", label: "Home", icon: Home },
     { href: "/routes", label: "Find My Route", icon: MapPin },
     { href: "/notifications", label: "Alerts", icon: Bell },
+    { href: "/reviews", label: "Reviews", icon: Star },
   ];
 
   return (

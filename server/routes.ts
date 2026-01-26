@@ -32,6 +32,11 @@ export async function registerRoutes(
     res.json(routesWithCounts);
   });
 
+  app.get("/api/reviews", async (req, res) => {
+    const reviews = await storage.getAllReviews();
+    res.json(reviews);
+  });
+
   app.get("/api/routes/:id/reviews", async (req, res) => {
     const routeId = Number(req.params.id);
     const reviews = await storage.getRouteReviews(routeId);

@@ -142,13 +142,15 @@ export default function Home() {
               <p className="text-muted-foreground">Get notified immediately about delays, strikes, or route changes.</p>
             </button>
           </Link>
-          <div className="bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/50">
-            <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center text-accent-foreground mb-4">
-              <Star className="h-6 w-6" />
-            </div>
-            <h3 className="font-display text-xl font-bold mb-2">Route Reviews</h3>
-            <p className="text-muted-foreground">Hear from fellow commuters and share your own travel experiences.</p>
-          </div>
+          <Link href="/reviews">
+            <button className="bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/50 text-left w-full hover:shadow-lg transition-shadow" data-testid="link-route-reviews">
+              <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center text-accent-foreground mb-4">
+                <Star className="h-6 w-6" />
+              </div>
+              <h3 className="font-display text-xl font-bold mb-2">Route Reviews</h3>
+              <p className="text-muted-foreground">Hear from fellow commuters and share your own travel experiences.</p>
+            </button>
+          </Link>
         </div>
 
         {/* Critical Alerts Section */}

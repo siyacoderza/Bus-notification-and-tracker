@@ -9,6 +9,7 @@ import RouteDetails from "@/pages/RouteDetails";
 import RoutesPage from "@/pages/Routes";
 import NotificationsPage from "@/pages/Notifications";
 import SubscriptionsPage from "@/pages/Subscriptions";
+import ReviewsPage from "@/pages/Reviews";
 import { Footer } from "@/components/Footer";
 
 import AuthPage from "@/pages/AuthPage";
@@ -23,6 +24,7 @@ function Router() {
           <Route path="/routes" component={RoutesPage} />
           <Route path="/notifications" component={NotificationsPage} />
           <Route path="/subscriptions" component={SubscriptionsPage} />
+          <Route path="/reviews" component={ReviewsPage} />
           <Route component={NotFound} />
         </Switch>
       </main>

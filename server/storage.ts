@@ -49,6 +49,7 @@ export interface IStorage {
 
   // Reviews
   getRouteReviews(routeId: number): Promise<(Review & { user: User })[]>;
+  getAllReviews(): Promise<(Review & { user: User; route: BusRoute })[]>;
   createReview(review: InsertReview): Promise<Review>;
 
   // Chat
@@ -194,6 +195,25 @@ export class DatabaseStorage implements IStorage {
   async createReview(review: InsertReview): Promise<Review> {
     const [newReview] = await db.insert(reviews).values(review).returning();
     return newReview;
+  }
+
+  async getAllReviews(): Promise<(Review & { user: User; route: BusRoute })[]> {
+    const results = await db
+      .select({
+        review: reviews,
+        user: users,
+        route: busRoutes,
+      })
+      .from(reviews)
+      .innerJoin(users, eq(reviews.userId, users.id))
+      .innerJoin(busRoutes, eq(reviews.routeId, busRoutes.id))
+      .orderBy(desc(reviews.createdAt));
+    
+    return results.map(r => ({
+      ...r.review,
+      user: r.user,
+      route: r.route,
+    }));
   }
 
   // Chat
