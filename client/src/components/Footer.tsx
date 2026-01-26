@@ -33,6 +33,9 @@ export function Footer() {
               <li>
                 <Link href="/subscriptions" className="hover:text-secondary transition-colors">My Subscriptions</Link>
               </li>
+              <li>
+                <Link href="/jobs" className="hover:text-secondary transition-colors">Transport Jobs</Link>
+              </li>
             </ul>
           </div>
 
@@ -50,7 +53,7 @@ export function Footer() {
                 <a href="#" className="hover:text-secondary transition-colors">Terms of Service</a>
               </li>
               <li>
-                <a href="#" className="hover:text-secondary transition-colors">Operator Portal</a>
+                <span className="text-primary-foreground/60">Driver & Admin access available in navigation</span>
               </li>
             </ul>
           </div>

@@ -9,7 +9,7 @@ import { useDeleteRoute } from "@/hooks/use-routes";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { EditRouteDialog } from "./EditRouteDialog";
-import { useOperatorMode } from "@/hooks/use-operator-mode";
+import { useDriverMode } from "@/hooks/use-driver-mode";
 
 import { ReviewList, ReviewForm } from "./reviews";
 
@@ -91,7 +91,7 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
     }
   };
 
-  const { isOperator } = useOperatorMode();
+  const { isDriver } = useDriverMode();
   const waitingCount = route.waitingCount || 0;
 
   const incrementWaiting = useMutation({
@@ -237,7 +237,7 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
               <span className="truncate">I'm Waiting</span>
             </Button>
 
-            {user && !isOperator && (
+            {user && !isDriver && (
               <Button 
                 onClick={handleSubscription} 
                 disabled={isPending}
@@ -250,9 +250,9 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
           </div>
 
           
-          {isOperator && (
+          {isDriver && (
             <div className="w-full text-sm font-medium text-center text-muted-foreground p-2 bg-muted/30 rounded-lg">
-              Status Management Mode
+              Driver Mode - Mark Availability
             </div>
           )}
 

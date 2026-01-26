@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useRoutes } from "@/hooks/use-routes";
 import { RouteCard } from "@/components/RouteCard";
-import { OperatorPinDialog } from "@/components/OperatorPinDialog";
+import { DriverPinDialog } from "@/components/DriverPinDialog";
+import { AdminPinDialog } from "@/components/AdminPinDialog";
 
 export default function Home() {
   const { user } = useAuth();
@@ -44,7 +45,8 @@ export default function Home() {
               <span>MzansiMove</span>
             </div>
             <div className="flex flex-wrap justify-center sm:justify-end gap-3 items-center">
-              <OperatorPinDialog variant="light" />
+              <DriverPinDialog variant="light" />
+              <AdminPinDialog variant="light" />
             </div>
           </nav>
 

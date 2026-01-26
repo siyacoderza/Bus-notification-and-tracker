@@ -10,7 +10,7 @@ import { Navbar } from "@/components/Navbar";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useOperatorMode } from "@/hooks/use-operator-mode";
+import { useAdminMode } from "@/hooks/use-admin-mode";
 
 type Province = {
   id: number;
@@ -29,7 +29,7 @@ type Municipality = {
 
 export default function RoutesPage() {
   const { user } = useAuth();
-  const { isOperator } = useOperatorMode();
+  const { isAdmin } = useAdminMode();
   const [selectedProvince, setSelectedProvince] = useState<Province | null>(null);
   const [selectedMunicipality, setSelectedMunicipality] = useState<Municipality | null>(null);
   const [search, setSearch] = useState("");
@@ -120,7 +120,7 @@ export default function RoutesPage() {
             </div>
           </div>
           
-          {isOperator && selectedMunicipality && <CreateRouteDialog />}
+          {isAdmin && selectedMunicipality && <CreateRouteDialog />}
         </div>
 
         {/* Step 1: Select Province */}

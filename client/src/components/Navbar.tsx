@@ -1,11 +1,12 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { Bus, Home, MapPin, Bell, Share2, Menu, Star, Shield } from "lucide-react";
+import { Bus, Home, MapPin, Bell, Share2, Menu, Star, Shield, Briefcase } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useToast } from "@/hooks/use-toast";
-import { OperatorPinDialog } from "@/components/OperatorPinDialog";
+import { DriverPinDialog } from "@/components/DriverPinDialog";
+import { AdminPinDialog } from "@/components/AdminPinDialog";
 
 export function Navbar() {
   const { user } = useAuth();
@@ -34,6 +35,7 @@ export function Navbar() {
     { href: "/routes", label: "Find My Route", icon: MapPin },
     { href: "/notifications", label: "Alerts", icon: Bell },
     { href: "/reviews", label: "Reviews", icon: Star },
+    { href: "/jobs", label: "Jobs", icon: Briefcase },
   ];
 
   return (
@@ -83,8 +85,9 @@ export function Navbar() {
                     <Share2 className="h-5 w-5" />
                     <span>Share App</span>
                   </button>
-                  <div className="mt-2" onClick={() => setOpen(false)}>
-                    <OperatorPinDialog />
+                  <div className="mt-2 flex flex-col gap-2" onClick={() => setOpen(false)}>
+                    <DriverPinDialog />
+                    <AdminPinDialog />
                   </div>
                 </nav>
               </SheetContent>
@@ -123,7 +126,8 @@ export function Navbar() {
 
           {/* Right side buttons */}
           <div className="flex items-center gap-1 shrink-0">
-            <OperatorPinDialog />
+            <DriverPinDialog />
+            <AdminPinDialog />
             <Button onClick={handleShare} variant="ghost" size="icon" data-testid="button-share-global">
               <Share2 className="h-5 w-5" />
             </Button>

@@ -5,11 +5,11 @@ import { CreateNotificationDialog } from "@/components/CreateNotificationDialog"
 import { Navbar } from "@/components/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShieldAlert } from "lucide-react";
-import { useOperatorMode } from "@/hooks/use-operator-mode";
+import { useAdminMode } from "@/hooks/use-admin-mode";
 
 export default function NotificationsPage() {
   const { user } = useAuth();
-  const { isOperator } = useOperatorMode();
+  const { isAdmin } = useAdminMode();
   const { data: allNotifications, isLoading: loadingAll } = useNotifications(false);
   const { data: myNotifications, isLoading: loadingMy } = useNotifications(true);
 
@@ -27,7 +27,7 @@ export default function NotificationsPage() {
             <p className="text-muted-foreground mt-1">Real-time updates on delays and service changes.</p>
           </div>
           
-          {isOperator && <CreateNotificationDialog />}
+          {isAdmin && <CreateNotificationDialog />}
         </div>
 
         <Tabs defaultValue={user ? "my-alerts" : "all"} className="w-full">

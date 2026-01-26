@@ -10,6 +10,7 @@ import RoutesPage from "@/pages/Routes";
 import NotificationsPage from "@/pages/Notifications";
 import SubscriptionsPage from "@/pages/Subscriptions";
 import ReviewsPage from "@/pages/Reviews";
+import JobsPage from "@/pages/Jobs";
 import { Footer } from "@/components/Footer";
 
 import AuthPage from "@/pages/AuthPage";
@@ -25,6 +26,7 @@ function Router() {
           <Route path="/notifications" component={NotificationsPage} />
           <Route path="/subscriptions" component={SubscriptionsPage} />
           <Route path="/reviews" component={ReviewsPage} />
+          <Route path="/jobs" component={JobsPage} />
           <Route component={NotFound} />
         </Switch>
       </main>

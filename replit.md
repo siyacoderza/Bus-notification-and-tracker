@@ -2,9 +2,11 @@
 
 ## Overview
 
-MzansiMove is a South African bus route tracking and notification application. The platform allows commuters to browse bus routes, subscribe to routes for real-time alerts, and receive notifications about delays, cancellations, and service changes. Operators can manage routes and publish alerts to keep passengers informed.
+MzansiMove is a South African bus route tracking and notification application. The platform allows commuters to browse bus routes, subscribe to routes for real-time alerts, and receive notifications about delays, cancellations, and service changes. The app supports role-based access for bus drivers and administrators.
 
 The application follows a Material Design-inspired approach with Google Maps styling for navigation contexts, focusing on utility, clarity, and efficient route management workflows.
+
+**Key Design Decision**: No personal data storage or Replit Auth required for basic functionality to avoid privacy policy requirements and not scare African users. Only optional login for subscriptions.
 
 ## User Preferences
 
@@ -38,7 +40,23 @@ Preferred communication style: Simple, everyday language.
 - **Bus Routes**: Route information including name, description, start/end locations, operating company
 - **Notifications**: Alerts tied to routes with types (delay, cancellation, info, emergency)
 - **Subscriptions**: User-route relationships for personalized alert delivery
+- **Reviews**: User reviews with ratings for bus routes
+- **Jobs**: Transport job postings (title, description, location, salary, requirements, company, contactInfo)
 - **Users/Sessions**: Authentication tables managed by Replit Auth integration
+
+### Role-Based Access (PIN System)
+The app uses a dual PIN system for role-based access without requiring user accounts:
+
+1. **Driver Mode** (OPERATOR_PIN environment variable)
+   - Bus drivers can mark their availability on routes
+   - Access via "Driver" button in navigation
+   - Endpoints: `/api/verify-driver-pin`, `/api/driver-status`, `/api/exit-driver-mode`
+
+2. **Admin Mode** (ADMIN_PIN environment variable)
+   - App owner can manage routes, alerts, and job postings
+   - Access via "Admin" button in navigation
+   - Endpoints: `/api/verify-admin-pin`, `/api/admin-status`, `/api/exit-admin-mode`
+   - Protected endpoints use `isAdminVerified` middleware
 
 ### API Structure
 Routes are defined with full type contracts in `shared/routes.ts`:
@@ -52,12 +70,19 @@ Routes are defined with full type contracts in `shared/routes.ts`:
 - `GET /api/subscriptions` - Get user's subscriptions
 - `POST /api/subscriptions` - Subscribe to route
 - `DELETE /api/subscriptions/:routeId` - Unsubscribe from route
+- `GET /api/jobs` - List active job postings
+- `GET /api/jobs/:id` - Get single job details
+- `POST /api/jobs` - Create job (admin only)
+- `PUT /api/jobs/:id` - Update job (admin only)
+- `DELETE /api/jobs/:id` - Delete job (admin only)
 
 ### Authentication Flow
-- Replit Auth via OpenID Connect handles user authentication
+- Replit Auth via OpenID Connect handles user authentication (optional for subscriptions)
 - Session-based authentication with PostgreSQL session store
-- Protected routes use `isAuthenticated` middleware
+- Protected routes use `isAuthenticated` middleware for user features
+- PIN-based verification for driver (`isDriverVerified`) and admin (`isAdminVerified`) features
 - User data stored in `users` table with Replit profile information
+- **Required Environment Variables**: `OPERATOR_PIN` (for drivers), `ADMIN_PIN` (for admin)
 
 ### Project Structure
 ```
@@ -65,7 +90,7 @@ client/           # Frontend React application
   src/
     components/   # Reusable UI components
     hooks/        # Custom React hooks for data fetching
-    pages/        # Page components (Home, Routes, Notifications, Subscriptions)
+    pages/        # Page components (Home, Routes, Notifications, Subscriptions, Jobs, Reviews)
     lib/          # Utilities and query client setup
 server/           # Express backend
   replit_integrations/auth/  # Replit Auth integration
