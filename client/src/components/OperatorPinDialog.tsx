@@ -59,7 +59,7 @@ export function OperatorPinDialog({ variant = "default" }: OperatorPinDialogProp
         variant="outline"
         size="sm"
         onClick={handleExit}
-        className={`gap-2 ${isLight ? "border-white/30 text-white hover:bg-white/10" : "border-primary/30 text-primary"}`}
+        className={`gap-2 no-default-hover-elevate ${isLight ? "border-white/30 text-white bg-white/10" : "border-primary/30 text-primary"}`}
         data-testid="button-exit-operator"
       >
         <Shield className={`h-4 w-4 ${isLight ? "fill-white/20" : "fill-primary/20"}`} />
@@ -75,7 +75,7 @@ export function OperatorPinDialog({ variant = "default" }: OperatorPinDialogProp
         <Button
           variant="ghost"
           size="sm"
-          className={`gap-2 ${isLight ? "text-white/80 hover:text-white hover:bg-white/10" : "text-muted-foreground"}`}
+          className={`gap-2 no-default-hover-elevate ${isLight ? "text-white/80 bg-white/5" : "text-muted-foreground"}`}
           data-testid="button-operator-access"
         >
           <Shield className="h-4 w-4" />
