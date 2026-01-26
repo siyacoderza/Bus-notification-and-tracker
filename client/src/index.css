@@ -8,17 +8,17 @@
   --font-display: 'Outfit', sans-serif;
   --font-body: 'DM Sans', sans-serif;
 
-  /* Vibrant South African Palette - Inspired by colourful textiles and modern urban design */
-  /* Primary: Deep Indigo / Purple - Authority & Trust */
-  --primary: 262 83% 58%;
+  /* Teal & Cyan Palette - Modern transit aesthetic */
+  /* Primary: Deep Teal - Trust & Movement */
+  --primary: 174 72% 40%;
   --primary-foreground: 0 0% 100%;
 
-  /* Secondary: Vibrant Yellow/Gold - Attention & Energy (Taxi yellow hint) */
-  --secondary: 45 93% 47%;
+  /* Secondary: Bright Cyan - Energy & Freshness */
+  --secondary: 187 85% 53%;
   --secondary-foreground: 222 47% 11%;
 
   /* Backgrounds */
-  --background: 210 20% 98%;
+  --background: 180 20% 98%;
   --foreground: 222 47% 11%;
   
   --card: 0 0% 100%;
@@ -27,50 +27,50 @@
   --popover: 0 0% 100%;
   --popover-foreground: 222 47% 11%;
   
-  --muted: 210 40% 96%;
+  --muted: 180 20% 96%;
   --muted-foreground: 215 16% 47%;
   
-  --accent: 262 83% 96%;
-  --accent-foreground: 262 83% 58%;
+  --accent: 174 72% 94%;
+  --accent-foreground: 174 72% 30%;
   
   --destructive: 0 84% 60%;
   --destructive-foreground: 210 40% 98%;
   
-  --border: 214 32% 91%;
-  --input: 214 32% 91%;
-  --ring: 262 83% 58%;
+  --border: 180 20% 91%;
+  --input: 180 20% 91%;
+  --ring: 174 72% 40%;
   
   --radius: 0.75rem;
 }
 
 .dark {
-  --background: 222 47% 11%;
-  --foreground: 210 40% 98%;
+  --background: 180 30% 8%;
+  --foreground: 180 20% 98%;
   
-  --card: 222 47% 11%;
-  --card-foreground: 210 40% 98%;
+  --card: 180 25% 12%;
+  --card-foreground: 180 20% 98%;
   
-  --popover: 222 47% 11%;
-  --popover-foreground: 210 40% 98%;
+  --popover: 180 25% 12%;
+  --popover-foreground: 180 20% 98%;
   
-  --primary: 262 83% 58%;
-  --primary-foreground: 210 40% 98%;
+  --primary: 174 72% 45%;
+  --primary-foreground: 180 20% 98%;
   
-  --secondary: 45 93% 47%;
+  --secondary: 187 85% 53%;
   --secondary-foreground: 222 47% 11%;
   
-  --muted: 217 33% 17%;
-  --muted-foreground: 215 20% 65%;
+  --muted: 180 20% 17%;
+  --muted-foreground: 180 15% 65%;
   
-  --accent: 217 33% 17%;
-  --accent-foreground: 210 40% 98%;
+  --accent: 180 20% 17%;
+  --accent-foreground: 180 20% 98%;
   
   --destructive: 0 62% 30%;
-  --destructive-foreground: 210 40% 98%;
+  --destructive-foreground: 180 20% 98%;
   
-  --border: 217 33% 17%;
-  --input: 217 33% 17%;
-  --ring: 224 76% 48%;
+  --border: 180 20% 17%;
+  --input: 180 20% 17%;
+  --ring: 174 72% 45%;
 }
 
 @layer base {
