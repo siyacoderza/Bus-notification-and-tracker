@@ -1,12 +1,15 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { Bus, Home, MapPin, Bell, Share2 } from "lucide-react";
+import { Bus, Home, MapPin, Bell, Share2, Menu } from "lucide-react";
+import { useState } from "react";
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useToast } from "@/hooks/use-toast";
 
 export function Navbar() {
   const { user } = useAuth();
   const [location] = useLocation();
+  const [open, setOpen] = useState(false);
   const { toast } = useToast();
 
   const handleShare = () => {
@@ -35,6 +38,54 @@ export function Navbar() {
     <header className="bg-white border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center gap-4">
+          {/* Mobile Menu */}
+          <div className="md:hidden">
+            <Sheet open={open} onOpenChange={setOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" data-testid="button-menu">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-72">
+                <SheetHeader>
+                  <SheetTitle className="flex items-center gap-2 font-display text-xl font-bold text-primary">
+                    <Bus className="h-6 w-6 text-secondary" />
+                    MzansiMove
+                  </SheetTitle>
+                </SheetHeader>
+                <nav className="flex flex-col gap-2 mt-8">
+                  {links.map((link) => {
+                    const Icon = link.icon;
+                    const isActive = location === link.href;
+                    return (
+                      <Link key={link.href} href={link.href}>
+                        <button 
+                          onClick={() => setOpen(false)}
+                          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors ${
+                            isActive 
+                              ? 'bg-primary/10 text-primary' 
+                              : 'text-foreground hover:text-primary hover:bg-muted'
+                          }`}
+                        >
+                          <Icon className="h-5 w-5" />
+                          <span>{link.label}</span>
+                        </button>
+                      </Link>
+                    );
+                  })}
+                  <div className="h-px bg-border my-4" />
+                  <button 
+                    onClick={() => { handleShare(); setOpen(false); }}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium text-foreground hover:text-primary hover:bg-muted transition-colors"
+                  >
+                    <Share2 className="h-5 w-5" />
+                    <span>Share App</span>
+                  </button>
+                </nav>
+              </SheetContent>
+            </Sheet>
+          </div>
+
           <Link href="/">
             <div className="flex items-center gap-2 font-display text-xl font-bold text-primary cursor-pointer shrink-0">
               <Bus className="h-6 w-6 text-secondary" />
@@ -42,15 +93,15 @@ export function Navbar() {
             </div>
           </Link>
 
-          {/* Navigation - Always visible */}
-          <nav className="flex items-center gap-1 sm:gap-2 flex-1 justify-center">
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-2 flex-1 justify-center">
             {links.map((link) => {
               const Icon = link.icon;
               const isActive = location === link.href;
               return (
                 <Link key={link.href} href={link.href}>
                   <button 
-                    className={`flex items-center gap-1.5 px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                       isActive 
                         ? 'bg-primary/10 text-primary' 
                         : 'text-muted-foreground hover:text-primary hover:bg-muted'
@@ -58,15 +109,20 @@ export function Navbar() {
                     data-testid={`nav-${link.label.toLowerCase().replace(/\s+/g, '-')}`}
                   >
                     <Icon className="h-4 w-4" />
-                    <span className="hidden xs:inline sm:inline">{link.label}</span>
+                    <span>{link.label}</span>
                   </button>
                 </Link>
               );
             })}
           </nav>
 
-          {/* Share Button */}
-          <Button onClick={handleShare} variant="ghost" size="icon" className="shrink-0" data-testid="button-share-global">
+          {/* Share Button - Desktop */}
+          <Button onClick={handleShare} variant="ghost" size="icon" className="shrink-0 hidden md:flex" data-testid="button-share-global">
+            <Share2 className="h-5 w-5" />
+          </Button>
+
+          {/* Mobile - just show share icon */}
+          <Button onClick={handleShare} variant="ghost" size="icon" className="shrink-0 md:hidden" data-testid="button-share-mobile">
             <Share2 className="h-5 w-5" />
           </Button>
         </div>
