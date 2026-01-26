@@ -1,15 +1,12 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { Bus, Menu, X, Share2 } from "lucide-react";
-import { useState } from "react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Bus, Home, MapPin, Bell, Share2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export function Navbar() {
   const { user } = useAuth();
   const [location] = useLocation();
-  const [open, setOpen] = useState(false);
   const { toast } = useToast();
 
   const handleShare = () => {
@@ -29,71 +26,49 @@ export function Navbar() {
   };
 
   const links = [
-    { href: "/routes", label: "Routes" },
-    { href: "/notifications", label: "Alerts" },
-    ...(user ? [{ href: "/subscriptions", label: "My Routes" }] : []),
+    { href: "/", label: "Home", icon: Home },
+    { href: "/routes", label: "Find My Route", icon: MapPin },
+    { href: "/notifications", label: "Alerts", icon: Bell },
   ];
 
   return (
     <header className="bg-white border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
+        <div className="flex justify-between h-16 items-center gap-4">
           <Link href="/">
-            <div className="flex items-center gap-2 font-display text-xl font-bold text-primary cursor-pointer">
+            <div className="flex items-center gap-2 font-display text-xl font-bold text-primary cursor-pointer shrink-0">
               <Bus className="h-6 w-6 text-secondary" />
-              <span>MzansiMove</span>
+              <span className="hidden sm:inline">MzansiMove</span>
             </div>
           </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-8">
-            {links.map((link) => (
-              <Link key={link.href} href={link.href}>
-                <span className={`cursor-pointer text-sm font-medium transition-colors hover:text-primary ${location === link.href ? 'text-primary' : 'text-muted-foreground'}`}>
-                  {link.label}
-                </span>
-              </Link>
-            ))}
-            
-            <Button onClick={handleShare} variant="outline" size="sm" className="gap-2">
-              <Share2 className="h-4 w-4" />
-              Share
-            </Button>
-
-            {/* Login disabled by request */}
+          {/* Navigation - Always visible */}
+          <nav className="flex items-center gap-1 sm:gap-2 flex-1 justify-center">
+            {links.map((link) => {
+              const Icon = link.icon;
+              const isActive = location === link.href;
+              return (
+                <Link key={link.href} href={link.href}>
+                  <button 
+                    className={`flex items-center gap-1.5 px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+                      isActive 
+                        ? 'bg-primary/10 text-primary' 
+                        : 'text-muted-foreground hover:text-primary hover:bg-muted'
+                    }`}
+                    data-testid={`nav-${link.label.toLowerCase().replace(/\s+/g, '-')}`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span className="hidden xs:inline sm:inline">{link.label}</span>
+                  </button>
+                </Link>
+              );
+            })}
           </nav>
 
-          {/* Mobile Nav */}
-          <div className="md:hidden flex items-center gap-2">
-            <Button onClick={handleShare} variant="ghost" size="icon">
-              <Share2 className="h-5 w-5" />
-            </Button>
-            <Sheet open={open} onOpenChange={setOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-6 w-6" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent>
-                <div className="flex flex-col gap-6 mt-10">
-                  {links.map((link) => (
-                    <Link key={link.href} href={link.href}>
-                      <span 
-                        onClick={() => setOpen(false)}
-                        className={`text-lg font-medium ${location === link.href ? 'text-primary' : 'text-foreground'}`}
-                      >
-                        {link.label}
-                      </span>
-                    </Link>
-                  ))}
-                  
-                  <div className="h-px bg-border my-2" />
-                  
-                  {/* Login disabled by request */}
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
+          {/* Share Button */}
+          <Button onClick={handleShare} variant="ghost" size="icon" className="shrink-0" data-testid="button-share-global">
+            <Share2 className="h-5 w-5" />
+          </Button>
         </div>
       </div>
     </header>

@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { NotificationList } from "@/components/NotificationList";
 import { useNotifications } from "@/hooks/use-notifications";
-import { ArrowRight, Bus, Bell, Star, Search, Loader2 } from "lucide-react";
+import { ArrowRight, Bus, Bell, Star, Search, Loader2, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useRoutes } from "@/hooks/use-routes";
@@ -121,16 +121,18 @@ export default function Home() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {/* Feature Cards */}
-          <button 
-            onClick={() => document.querySelector('input[data-testid="input-route-search"]')?.scrollIntoView({ behavior: 'smooth' })}
-            className="text-left bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/50 hover-elevate active-elevate-2 transition-all"
-          >
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4">
-              <Bus className="h-6 w-6" />
-            </div>
-            <h3 className="font-display text-xl font-bold mb-2">Find a Route</h3>
-            <p className="text-muted-foreground">Up-to-date departure times for all major routes across the metro.</p>
-          </button>
+          <Link href="/routes">
+            <button 
+              className="w-full text-left bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/50 hover-elevate active-elevate-2 transition-all"
+              data-testid="card-find-route"
+            >
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4">
+                <Bus className="h-6 w-6" />
+              </div>
+              <h3 className="font-display text-xl font-bold mb-2">Find My Route</h3>
+              <p className="text-muted-foreground">Browse routes by municipality to find buses in your area.</p>
+            </button>
+          </Link>
           <Link href="/notifications">
             <button className="w-full text-left bg-card p-6 rounded-2xl shadow-xl shadow-black/5 border border-border/50 hover-elevate active-elevate-2 transition-all">
               <div className="w-12 h-12 rounded-xl bg-secondary/20 flex items-center justify-center text-secondary-foreground mb-4">
