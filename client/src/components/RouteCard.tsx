@@ -248,12 +248,7 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
             )}
           </div>
 
-          {!user && (
-            <p className="text-[10px] text-muted-foreground text-center w-full">
-              Log in to receive notifications for this route
-            </p>
-          )}
-
+          
           {isOperator && (
             <div className="w-full text-sm font-medium text-center text-muted-foreground p-2 bg-muted/30 rounded-lg">
               Status Management Mode
