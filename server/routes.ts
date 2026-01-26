@@ -245,53 +245,12 @@ async function seedDatabase() {
   if (routes.length === 0) {
     console.log("Seeding database...");
     
-    // Create Routes
-    const r1 = await storage.createBusRoute({
-      name: "T01: Sandton to CBD",
-      description: "Express service via M1 Highway",
-      startLocation: "Sandton Station",
-      endLocation: "Gandhi Square",
-      operatingCompany: "Rea Vaya",
-      isActive: true,
-      frequency: "Every 15 mins",
-      schedule: ["06:00", "06:15", "06:30", "06:45", "07:00"]
-    });
-
-    const r2 = await storage.createBusRoute({
-      name: "C01: Waterfront to Camps Bay",
-      description: "Scenic coastal route",
-      startLocation: "V&A Waterfront",
-      endLocation: "Camps Bay Beach",
-      operatingCompany: "MyCiTi",
-      isActive: true,
-      frequency: "Every 20 mins",
-      schedule: ["07:00", "07:20", "07:40", "08:00"]
-    });
-
-    const r3 = await storage.createBusRoute({
-      name: "P05: Hatfield to Pretoria Central",
-      description: "University express shuttle",
-      startLocation: "Hatfield Gautrain",
-      endLocation: "Church Square",
-      operatingCompany: "A Re Yeng",
-      isActive: true,
-      frequency: "Every 10 mins",
-      schedule: ["06:00", "06:10", "06:20", "06:30"]
-    });
-
-    // Create Notifications
-    await storage.createNotification({
-      routeId: r1.id,
-      type: "delay",
-      message: "Heavy traffic on M1 South. Expect 20 min delays.",
-      activeUntil: new Date(Date.now() + 1000 * 60 * 60 * 2) // 2 hours
-    });
-
+    // Create sample notification
     await storage.createNotification({
       routeId: null, // System-wide
       type: "info",
-      message: "New fare prices effective from 1st Feb.",
-      activeUntil: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7)
+      message: "Welcome to MzansiMove! Add your bus routes to get started.",
+      activeUntil: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30)
     });
     
     console.log("Seeding complete.");
