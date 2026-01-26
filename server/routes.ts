@@ -215,6 +215,18 @@ export async function registerRoutes(
     res.json(positions);
   });
 
+  // === Provinces & Municipalities ===
+  app.get("/api/provinces", async (req, res) => {
+    const provinces = await storage.getProvinces();
+    res.json(provinces);
+  });
+
+  app.get("/api/municipalities", async (req, res) => {
+    const provinceId = req.query.provinceId ? Number(req.query.provinceId) : undefined;
+    const municipalities = await storage.getMunicipalities(provinceId);
+    res.json(municipalities);
+  });
+
   // Seed Data
   await seedDatabase();
 
@@ -241,18 +253,120 @@ export async function registerRoutes(
 }
 
 async function seedDatabase() {
-  const routes = await storage.getBusRoutes();
-  if (routes.length === 0) {
-    console.log("Seeding database...");
+  // Seed provinces and municipalities
+  const existingProvinces = await storage.getProvinces();
+  if (existingProvinces.length === 0) {
+    console.log("Seeding provinces and municipalities...");
     
-    // Create sample notification
+    // All 9 South African Provinces
+    const provinceData = [
+      { name: "Eastern Cape", code: "EC" },
+      { name: "Free State", code: "FS" },
+      { name: "Gauteng", code: "GP" },
+      { name: "KwaZulu-Natal", code: "KZN" },
+      { name: "Limpopo", code: "LP" },
+      { name: "Mpumalanga", code: "MP" },
+      { name: "Northern Cape", code: "NC" },
+      { name: "North West", code: "NW" },
+      { name: "Western Cape", code: "WC" },
+    ];
+
+    const createdProvinces: Record<string, number> = {};
+    for (const p of provinceData) {
+      const province = await storage.createProvince(p);
+      createdProvinces[p.code] = province.id;
+    }
+
+    // Major Municipalities by Province (8 Metros + Key Districts/Locals)
+    const municipalityData = [
+      // Eastern Cape
+      { name: "Buffalo City", provinceCode: "EC", type: "metro", code: "BUF" },
+      { name: "Nelson Mandela Bay", provinceCode: "EC", type: "metro", code: "NMA" },
+      { name: "Amathole District", provinceCode: "EC", type: "district", code: "DC12" },
+      { name: "Chris Hani District", provinceCode: "EC", type: "district", code: "DC13" },
+      { name: "Joe Gqabi District", provinceCode: "EC", type: "district", code: "DC14" },
+      { name: "OR Tambo District", provinceCode: "EC", type: "district", code: "DC15" },
+      { name: "Alfred Nzo District", provinceCode: "EC", type: "district", code: "DC44" },
+      { name: "Sarah Baartman District", provinceCode: "EC", type: "district", code: "DC10" },
+      
+      // Free State
+      { name: "Mangaung", provinceCode: "FS", type: "metro", code: "MAN" },
+      { name: "Xhariep District", provinceCode: "FS", type: "district", code: "DC16" },
+      { name: "Lejweleputswa District", provinceCode: "FS", type: "district", code: "DC18" },
+      { name: "Thabo Mofutsanyana District", provinceCode: "FS", type: "district", code: "DC19" },
+      { name: "Fezile Dabi District", provinceCode: "FS", type: "district", code: "DC20" },
+      
+      // Gauteng
+      { name: "City of Johannesburg", provinceCode: "GP", type: "metro", code: "JHB" },
+      { name: "City of Tshwane", provinceCode: "GP", type: "metro", code: "TSH" },
+      { name: "Ekurhuleni", provinceCode: "GP", type: "metro", code: "EKU" },
+      { name: "Sedibeng District", provinceCode: "GP", type: "district", code: "DC42" },
+      { name: "West Rand District", provinceCode: "GP", type: "district", code: "DC48" },
+      
+      // KwaZulu-Natal
+      { name: "eThekwini", provinceCode: "KZN", type: "metro", code: "ETH" },
+      { name: "Ugu District", provinceCode: "KZN", type: "district", code: "DC21" },
+      { name: "uMgungundlovu District", provinceCode: "KZN", type: "district", code: "DC22" },
+      { name: "Uthukela District", provinceCode: "KZN", type: "district", code: "DC23" },
+      { name: "Umzinyathi District", provinceCode: "KZN", type: "district", code: "DC24" },
+      { name: "Amajuba District", provinceCode: "KZN", type: "district", code: "DC25" },
+      { name: "Zululand District", provinceCode: "KZN", type: "district", code: "DC26" },
+      { name: "Umkhanyakude District", provinceCode: "KZN", type: "district", code: "DC27" },
+      { name: "King Cetshwayo District", provinceCode: "KZN", type: "district", code: "DC28" },
+      { name: "iLembe District", provinceCode: "KZN", type: "district", code: "DC29" },
+      { name: "Harry Gwala District", provinceCode: "KZN", type: "district", code: "DC43" },
+      
+      // Limpopo
+      { name: "Mopani District", provinceCode: "LP", type: "district", code: "DC33" },
+      { name: "Vhembe District", provinceCode: "LP", type: "district", code: "DC34" },
+      { name: "Capricorn District", provinceCode: "LP", type: "district", code: "DC35" },
+      { name: "Waterberg District", provinceCode: "LP", type: "district", code: "DC36" },
+      { name: "Sekhukhune District", provinceCode: "LP", type: "district", code: "DC47" },
+      
+      // Mpumalanga
+      { name: "Gert Sibande District", provinceCode: "MP", type: "district", code: "DC30" },
+      { name: "Nkangala District", provinceCode: "MP", type: "district", code: "DC31" },
+      { name: "Ehlanzeni District", provinceCode: "MP", type: "district", code: "DC32" },
+      
+      // Northern Cape
+      { name: "Frances Baard District", provinceCode: "NC", type: "district", code: "DC9" },
+      { name: "Pixley ka Seme District", provinceCode: "NC", type: "district", code: "DC7" },
+      { name: "ZF Mgcawu District", provinceCode: "NC", type: "district", code: "DC8" },
+      { name: "Namakwa District", provinceCode: "NC", type: "district", code: "DC6" },
+      { name: "John Taolo Gaetsewe District", provinceCode: "NC", type: "district", code: "DC45" },
+      
+      // North West
+      { name: "Bojanala Platinum District", provinceCode: "NW", type: "district", code: "DC37" },
+      { name: "Ngaka Modiri Molema District", provinceCode: "NW", type: "district", code: "DC38" },
+      { name: "Dr Ruth Segomotsi Mompati District", provinceCode: "NW", type: "district", code: "DC39" },
+      { name: "Dr Kenneth Kaunda District", provinceCode: "NW", type: "district", code: "DC40" },
+      
+      // Western Cape
+      { name: "City of Cape Town", provinceCode: "WC", type: "metro", code: "CPT" },
+      { name: "West Coast District", provinceCode: "WC", type: "district", code: "DC1" },
+      { name: "Cape Winelands District", provinceCode: "WC", type: "district", code: "DC2" },
+      { name: "Overberg District", provinceCode: "WC", type: "district", code: "DC3" },
+      { name: "Eden District", provinceCode: "WC", type: "district", code: "DC4" },
+      { name: "Central Karoo District", provinceCode: "WC", type: "district", code: "DC5" },
+    ];
+
+    for (const m of municipalityData) {
+      await storage.createMunicipality({
+        name: m.name,
+        provinceId: createdProvinces[m.provinceCode],
+        type: m.type,
+        code: m.code,
+      });
+    }
+
+    // Create welcome notification
     await storage.createNotification({
-      routeId: null, // System-wide
+      routeId: null,
       type: "info",
       message: "Welcome to MzansiMove! Add your bus routes to get started.",
       activeUntil: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30)
     });
-    
-    console.log("Seeding complete.");
+
+    console.log("Seeding complete: 9 provinces, " + municipalityData.length + " municipalities added.");
   }
 }

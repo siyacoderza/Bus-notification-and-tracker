@@ -7,6 +7,20 @@ import { relations } from "drizzle-orm";
 
 // === TABLE DEFINITIONS ===
 
+export const provinces = pgTable("provinces", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  code: text("code").notNull().unique(), // e.g., "GP", "KZN", "WC"
+});
+
+export const municipalities = pgTable("municipalities", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  provinceId: integer("province_id").notNull().references(() => provinces.id),
+  type: text("type").notNull(), // 'metro', 'district', 'local'
+  code: text("code"), // Municipal code e.g., "ETH" for eThekwini
+});
+
 export const busRoutes = pgTable("bus_routes", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(), // e.g., "Route 5: City Center to Sandton"
@@ -14,6 +28,7 @@ export const busRoutes = pgTable("bus_routes", {
   startLocation: text("start_location").notNull(),
   endLocation: text("end_location").notNull(),
   operatingCompany: text("operating_company").notNull(), // e.g., "Putco", "Rea Vaya"
+  municipalityId: integer("municipality_id").references(() => municipalities.id),
   isActive: boolean("is_active").default(true),
   waitingCount: integer("waiting_count").default(0),
   frequency: text("frequency"), // e.g., "Every 15 mins"
@@ -133,14 +148,34 @@ export const usersRelations = relations(users, ({ many }) => ({
   subscriptions: many(subscriptions),
 }));
 
+export const provincesRelations = relations(provinces, ({ many }) => ({
+  municipalities: many(municipalities),
+}));
+
+export const municipalitiesRelations = relations(municipalities, ({ one, many }) => ({
+  province: one(provinces, {
+    fields: [municipalities.provinceId],
+    references: [provinces.id],
+  }),
+  routes: many(busRoutes),
+}));
+
 // === BASE SCHEMAS ===
 
+export const insertProvinceSchema = createInsertSchema(provinces).omit({ id: true });
+export const insertMunicipalitySchema = createInsertSchema(municipalities).omit({ id: true });
 export const insertBusRouteSchema = createInsertSchema(busRoutes).omit({ id: true });
 export const insertNotificationSchema = createInsertSchema(notifications).omit({ id: true, createdAt: true });
 export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({ id: true, createdAt: true });
 export const insertReviewSchema = createInsertSchema(reviews).omit({ id: true, createdAt: true });
 
 // === EXPLICIT API CONTRACT TYPES ===
+
+export type Province = typeof provinces.$inferSelect;
+export type InsertProvince = z.infer<typeof insertProvinceSchema>;
+
+export type Municipality = typeof municipalities.$inferSelect;
+export type InsertMunicipality = z.infer<typeof insertMunicipalitySchema>;
 
 export type BusRoute = typeof busRoutes.$inferSelect;
 export type InsertBusRoute = z.infer<typeof insertBusRouteSchema>;

@@ -7,6 +7,8 @@ import {
   reviews,
   messages,
   busPositions,
+  provinces,
+  municipalities,
   type BusRoute,
   type InsertBusRoute,
   type Notification,
@@ -20,6 +22,10 @@ import {
   type InsertMessage,
   type BusPosition,
   type InsertBusPosition,
+  type Province,
+  type InsertProvince,
+  type Municipality,
+  type InsertMunicipality,
 } from "@shared/schema";
 import { eq, desc, and } from "drizzle-orm";
 
@@ -56,6 +62,13 @@ export interface IStorage {
   // User Preferences
   getUser(id: string): Promise<User | undefined>;
   updateUserPreferences(id: string, pinned: number[], hidden: number[]): Promise<User>;
+
+  // Provinces & Municipalities
+  getProvinces(): Promise<Province[]>;
+  createProvince(province: InsertProvince): Promise<Province>;
+  getMunicipalities(provinceId?: number): Promise<(Municipality & { province: Province })[]>;
+  getMunicipality(id: number): Promise<Municipality | undefined>;
+  createMunicipality(municipality: InsertMunicipality): Promise<Municipality>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -227,6 +240,46 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return updated;
+  }
+
+  // Provinces
+  async getProvinces(): Promise<Province[]> {
+    return await db.select().from(provinces).orderBy(provinces.name);
+  }
+
+  async createProvince(province: InsertProvince): Promise<Province> {
+    const [newProvince] = await db.insert(provinces).values(province).returning();
+    return newProvince;
+  }
+
+  // Municipalities
+  async getMunicipalities(provinceId?: number): Promise<(Municipality & { province: Province })[]> {
+    const query = db
+      .select({
+        municipality: municipalities,
+        province: provinces,
+      })
+      .from(municipalities)
+      .innerJoin(provinces, eq(municipalities.provinceId, provinces.id))
+      .orderBy(municipalities.name);
+
+    if (provinceId) {
+      const results = await query.where(eq(municipalities.provinceId, provinceId));
+      return results.map(r => ({ ...r.municipality, province: r.province }));
+    }
+    
+    const results = await query;
+    return results.map(r => ({ ...r.municipality, province: r.province }));
+  }
+
+  async getMunicipality(id: number): Promise<Municipality | undefined> {
+    const [municipality] = await db.select().from(municipalities).where(eq(municipalities.id, id));
+    return municipality;
+  }
+
+  async createMunicipality(municipality: InsertMunicipality): Promise<Municipality> {
+    const [newMunicipality] = await db.insert(municipalities).values(municipality).returning();
+    return newMunicipality;
   }
 }
 
