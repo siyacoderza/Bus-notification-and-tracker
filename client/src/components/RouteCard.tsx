@@ -9,6 +9,7 @@ import { useDeleteRoute } from "@/hooks/use-routes";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { EditRouteDialog } from "./EditRouteDialog";
+import { useOperatorMode } from "@/hooks/use-operator-mode";
 
 import { ReviewList, ReviewForm } from "./reviews";
 
@@ -90,7 +91,7 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
     }
   };
 
-  const isOperator = user?.role === 'operator';
+  const { isOperator } = useOperatorMode();
   const waitingCount = route.waitingCount || 0;
 
   const incrementWaiting = useMutation({

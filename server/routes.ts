@@ -1,10 +1,18 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
 import { insertReviewSchema } from "@shared/schema";
+
+const isOperatorVerified = (req: any, res: Response, next: NextFunction) => {
+  if (req.session?.isOperator) {
+    next();
+  } else {
+    res.status(403).json({ message: "Operator access required. Please enter your operator PIN." });
+  }
+};
 
 export async function registerRoutes(
   httpServer: Server,
@@ -81,9 +89,8 @@ export async function registerRoutes(
     res.json(route);
   });
 
-  // Admin routes (Protected)
-  // For MVP, just checking if authenticated. In real app, check isAdmin role.
-  app.post(api.routes.create.path, isAuthenticated, async (req, res) => {
+  // Operator routes (Protected by PIN verification)
+  app.post(api.routes.create.path, isOperatorVerified, async (req, res) => {
     try {
       const input = api.routes.create.input.parse(req.body);
       const route = await storage.createBusRoute(input);
@@ -96,7 +103,7 @@ export async function registerRoutes(
     }
   });
 
-  app.put(api.routes.update.path, isAuthenticated, async (req, res) => {
+  app.put(api.routes.update.path, isOperatorVerified, async (req, res) => {
     try {
       const input = api.routes.update.input.parse(req.body);
       const route = await storage.updateBusRoute(Number(req.params.id), input);
@@ -106,7 +113,7 @@ export async function registerRoutes(
     }
   });
 
-  app.delete(api.routes.delete.path, isAuthenticated, async (req, res) => {
+  app.delete(api.routes.delete.path, isOperatorVerified, async (req, res) => {
     await storage.deleteBusRoute(Number(req.params.id));
     res.status(204).send();
   });
@@ -119,7 +126,7 @@ export async function registerRoutes(
     res.json(notifications);
   });
 
-  app.post(api.notifications.create.path, isAuthenticated, async (req, res) => {
+  app.post(api.notifications.create.path, isOperatorVerified, async (req, res) => {
     try {
       const input = api.notifications.create.input.parse(req.body);
       const notification = await storage.createNotification(input);
@@ -230,6 +237,32 @@ export async function registerRoutes(
     const provinceId = req.query.provinceId ? Number(req.query.provinceId) : undefined;
     const municipalities = await storage.getMunicipalities(provinceId);
     res.json(municipalities);
+  });
+
+  // === Operator PIN Verification ===
+  app.post("/api/verify-operator-pin", (req: any, res) => {
+    const { pin } = req.body;
+    const operatorPin = process.env.OPERATOR_PIN;
+    
+    if (!operatorPin) {
+      return res.status(500).json({ success: false, message: "Operator PIN not configured" });
+    }
+    
+    if (pin === operatorPin) {
+      req.session.isOperator = true;
+      res.json({ success: true });
+    } else {
+      res.status(401).json({ success: false, message: "Invalid PIN" });
+    }
+  });
+
+  app.post("/api/exit-operator-mode", (req: any, res) => {
+    req.session.isOperator = false;
+    res.json({ success: true });
+  });
+
+  app.get("/api/operator-status", (req: any, res) => {
+    res.json({ isOperator: !!req.session?.isOperator });
   });
 
   // Seed Data

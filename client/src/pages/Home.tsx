@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useRoutes } from "@/hooks/use-routes";
 import { RouteCard } from "@/components/RouteCard";
+import { OperatorPinDialog } from "@/components/OperatorPinDialog";
 
 export default function Home() {
   const { user } = useAuth();
@@ -43,7 +44,7 @@ export default function Home() {
               <span>MzansiMove</span>
             </div>
             <div className="flex flex-wrap justify-center sm:justify-end gap-3 items-center">
-              {/* Login disabled by request */}
+              <OperatorPinDialog variant="light" />
             </div>
           </nav>
 

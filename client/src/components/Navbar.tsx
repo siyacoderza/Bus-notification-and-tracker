@@ -1,10 +1,11 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { Bus, Home, MapPin, Bell, Share2, Menu, Star } from "lucide-react";
+import { Bus, Home, MapPin, Bell, Share2, Menu, Star, Shield } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useToast } from "@/hooks/use-toast";
+import { OperatorPinDialog } from "@/components/OperatorPinDialog";
 
 export function Navbar() {
   const { user } = useAuth();
@@ -82,6 +83,9 @@ export function Navbar() {
                     <Share2 className="h-5 w-5" />
                     <span>Share App</span>
                   </button>
+                  <div className="mt-2" onClick={() => setOpen(false)}>
+                    <OperatorPinDialog />
+                  </div>
                 </nav>
               </SheetContent>
             </Sheet>
@@ -117,15 +121,13 @@ export function Navbar() {
             })}
           </nav>
 
-          {/* Share Button - Desktop */}
-          <Button onClick={handleShare} variant="ghost" size="icon" className="shrink-0 hidden md:flex" data-testid="button-share-global">
-            <Share2 className="h-5 w-5" />
-          </Button>
-
-          {/* Mobile - just show share icon */}
-          <Button onClick={handleShare} variant="ghost" size="icon" className="shrink-0 md:hidden" data-testid="button-share-mobile">
-            <Share2 className="h-5 w-5" />
-          </Button>
+          {/* Right side buttons */}
+          <div className="flex items-center gap-1 shrink-0">
+            <OperatorPinDialog />
+            <Button onClick={handleShare} variant="ghost" size="icon" data-testid="button-share-global">
+              <Share2 className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
       </div>
     </header>
