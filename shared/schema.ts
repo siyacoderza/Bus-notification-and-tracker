@@ -81,6 +81,20 @@ export const busPositions = pgTable("bus_positions", {
   lastUpdate: timestamp("last_update").defaultNow(),
 });
 
+export const jobs = pgTable("jobs", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  location: text("location").notNull(),
+  salary: text("salary"),
+  requirements: text("requirements"),
+  company: text("company").notNull(),
+  contactInfo: text("contact_info").notNull(),
+  jobType: text("job_type").default("full-time"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const busRoutesRelations = relations(busRoutes, ({ many }) => ({
   notifications: many(notifications),
   subscriptions: many(subscriptions),
@@ -168,6 +182,7 @@ export const insertBusRouteSchema = createInsertSchema(busRoutes).omit({ id: tru
 export const insertNotificationSchema = createInsertSchema(notifications).omit({ id: true, createdAt: true });
 export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({ id: true, createdAt: true });
 export const insertReviewSchema = createInsertSchema(reviews).omit({ id: true, createdAt: true });
+export const insertJobSchema = createInsertSchema(jobs).omit({ id: true, createdAt: true });
 
 // === EXPLICIT API CONTRACT TYPES ===
 
@@ -188,6 +203,9 @@ export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
 
 export type Review = typeof reviews.$inferSelect;
 export type InsertReview = z.infer<typeof insertReviewSchema>;
+
+export type Job = typeof jobs.$inferSelect;
+export type InsertJob = z.infer<typeof insertJobSchema>;
 
 // Request types
 export type CreateBusRouteRequest = InsertBusRoute;

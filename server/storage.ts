@@ -9,6 +9,7 @@ import {
   busPositions,
   provinces,
   municipalities,
+  jobs,
   type BusRoute,
   type InsertBusRoute,
   type Notification,
@@ -26,6 +27,8 @@ import {
   type InsertProvince,
   type Municipality,
   type InsertMunicipality,
+  type Job,
+  type InsertJob,
 } from "@shared/schema";
 import { eq, desc, and } from "drizzle-orm";
 
@@ -70,6 +73,13 @@ export interface IStorage {
   getMunicipalities(provinceId?: number): Promise<(Municipality & { province: Province })[]>;
   getMunicipality(id: number): Promise<Municipality | undefined>;
   createMunicipality(municipality: InsertMunicipality): Promise<Municipality>;
+
+  // Jobs
+  getJobs(activeOnly?: boolean): Promise<Job[]>;
+  getJob(id: number): Promise<Job | undefined>;
+  createJob(job: InsertJob): Promise<Job>;
+  updateJob(id: number, updates: Partial<InsertJob>): Promise<Job>;
+  deleteJob(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -300,6 +310,33 @@ export class DatabaseStorage implements IStorage {
   async createMunicipality(municipality: InsertMunicipality): Promise<Municipality> {
     const [newMunicipality] = await db.insert(municipalities).values(municipality).returning();
     return newMunicipality;
+  }
+
+  // Jobs
+  async getJobs(activeOnly: boolean = true): Promise<Job[]> {
+    if (activeOnly) {
+      return await db.select().from(jobs).where(eq(jobs.isActive, true)).orderBy(desc(jobs.createdAt));
+    }
+    return await db.select().from(jobs).orderBy(desc(jobs.createdAt));
+  }
+
+  async getJob(id: number): Promise<Job | undefined> {
+    const [job] = await db.select().from(jobs).where(eq(jobs.id, id));
+    return job;
+  }
+
+  async createJob(job: InsertJob): Promise<Job> {
+    const [newJob] = await db.insert(jobs).values(job).returning();
+    return newJob;
+  }
+
+  async updateJob(id: number, updates: Partial<InsertJob>): Promise<Job> {
+    const [updated] = await db.update(jobs).set(updates).where(eq(jobs.id, id)).returning();
+    return updated;
+  }
+
+  async deleteJob(id: number): Promise<void> {
+    await db.delete(jobs).where(eq(jobs.id, id));
   }
 }
 

@@ -4,13 +4,21 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
-import { insertReviewSchema } from "@shared/schema";
+import { insertReviewSchema, insertJobSchema } from "@shared/schema";
 
-const isOperatorVerified = (req: any, res: Response, next: NextFunction) => {
-  if (req.session?.isOperator) {
+const isDriverVerified = (req: any, res: Response, next: NextFunction) => {
+  if (req.session?.isDriver) {
     next();
   } else {
-    res.status(403).json({ message: "Operator access required. Please enter your operator PIN." });
+    res.status(403).json({ message: "Driver access required. Please enter your driver PIN." });
+  }
+};
+
+const isAdminVerified = (req: any, res: Response, next: NextFunction) => {
+  if (req.session?.isAdmin) {
+    next();
+  } else {
+    res.status(403).json({ message: "Admin access required. Please enter your admin PIN." });
   }
 };
 
@@ -90,7 +98,7 @@ export async function registerRoutes(
   });
 
   // Operator routes (Protected by PIN verification)
-  app.post(api.routes.create.path, isOperatorVerified, async (req, res) => {
+  app.post(api.routes.create.path, isAdminVerified, async (req, res) => {
     try {
       const input = api.routes.create.input.parse(req.body);
       const route = await storage.createBusRoute(input);
@@ -103,7 +111,7 @@ export async function registerRoutes(
     }
   });
 
-  app.put(api.routes.update.path, isOperatorVerified, async (req, res) => {
+  app.put(api.routes.update.path, isAdminVerified, async (req, res) => {
     try {
       const input = api.routes.update.input.parse(req.body);
       const route = await storage.updateBusRoute(Number(req.params.id), input);
@@ -113,7 +121,7 @@ export async function registerRoutes(
     }
   });
 
-  app.delete(api.routes.delete.path, isOperatorVerified, async (req, res) => {
+  app.delete(api.routes.delete.path, isAdminVerified, async (req, res) => {
     await storage.deleteBusRoute(Number(req.params.id));
     res.status(204).send();
   });
@@ -126,7 +134,7 @@ export async function registerRoutes(
     res.json(notifications);
   });
 
-  app.post(api.notifications.create.path, isOperatorVerified, async (req, res) => {
+  app.post(api.notifications.create.path, isAdminVerified, async (req, res) => {
     try {
       const input = api.notifications.create.input.parse(req.body);
       const notification = await storage.createNotification(input);
@@ -239,30 +247,98 @@ export async function registerRoutes(
     res.json(municipalities);
   });
 
-  // === Operator PIN Verification ===
-  app.post("/api/verify-operator-pin", (req: any, res) => {
+  // === Driver PIN Verification ===
+  app.post("/api/verify-driver-pin", (req: any, res) => {
     const { pin } = req.body;
-    const operatorPin = process.env.OPERATOR_PIN;
+    const driverPin = process.env.OPERATOR_PIN;
     
-    if (!operatorPin) {
-      return res.status(500).json({ success: false, message: "Operator PIN not configured" });
+    if (!driverPin) {
+      return res.status(500).json({ success: false, message: "Driver PIN not configured" });
     }
     
-    if (pin === operatorPin) {
-      req.session.isOperator = true;
+    if (pin === driverPin) {
+      req.session.isDriver = true;
       res.json({ success: true });
     } else {
       res.status(401).json({ success: false, message: "Invalid PIN" });
     }
   });
 
-  app.post("/api/exit-operator-mode", (req: any, res) => {
-    req.session.isOperator = false;
+  app.post("/api/exit-driver-mode", (req: any, res) => {
+    req.session.isDriver = false;
     res.json({ success: true });
   });
 
-  app.get("/api/operator-status", (req: any, res) => {
-    res.json({ isOperator: !!req.session?.isOperator });
+  app.get("/api/driver-status", (req: any, res) => {
+    res.json({ isDriver: !!req.session?.isDriver });
+  });
+
+  // === Admin PIN Verification ===
+  app.post("/api/verify-admin-pin", (req: any, res) => {
+    const { pin } = req.body;
+    const adminPin = process.env.ADMIN_PIN;
+    
+    if (!adminPin) {
+      return res.status(500).json({ success: false, message: "Admin PIN not configured" });
+    }
+    
+    if (pin === adminPin) {
+      req.session.isAdmin = true;
+      res.json({ success: true });
+    } else {
+      res.status(401).json({ success: false, message: "Invalid PIN" });
+    }
+  });
+
+  app.post("/api/exit-admin-mode", (req: any, res) => {
+    req.session.isAdmin = false;
+    res.json({ success: true });
+  });
+
+  app.get("/api/admin-status", (req: any, res) => {
+    res.json({ isAdmin: !!req.session?.isAdmin });
+  });
+
+  // === Jobs API ===
+  app.get("/api/jobs", async (req, res) => {
+    const activeOnly = req.query.active !== "false";
+    const jobs = await storage.getJobs(activeOnly);
+    res.json(jobs);
+  });
+
+  app.get("/api/jobs/:id", async (req, res) => {
+    const job = await storage.getJob(Number(req.params.id));
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+    res.json(job);
+  });
+
+  app.post("/api/jobs", isAdminVerified, async (req, res) => {
+    try {
+      const input = insertJobSchema.parse(req.body);
+      const job = await storage.createJob(input);
+      res.status(201).json(job);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      throw err;
+    }
+  });
+
+  app.put("/api/jobs/:id", isAdminVerified, async (req, res) => {
+    try {
+      const job = await storage.updateJob(Number(req.params.id), req.body);
+      res.json(job);
+    } catch (err) {
+      res.status(400).json({ message: "Invalid input" });
+    }
+  });
+
+  app.delete("/api/jobs/:id", isAdminVerified, async (req, res) => {
+    await storage.deleteJob(Number(req.params.id));
+    res.status(204).send();
   });
 
   // Seed Data
