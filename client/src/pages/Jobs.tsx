@@ -5,7 +5,7 @@ import { CreateJobDialog } from "@/components/CreateJobDialog";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Briefcase, MapPin, Building2, Phone, Loader2, Trash2, Clock, Banknote } from "lucide-react";
+import { Briefcase, MapPin, Building2, Phone, Loader2, Trash2, Clock, Banknote, Code, GraduationCap } from "lucide-react";
 import { format } from "date-fns";
 import { type Job } from "@shared/schema";
 
@@ -19,10 +19,29 @@ function JobCard({ job, isAdmin }: { job: Job; isAdmin: boolean }) {
   };
 
   const jobTypeColors: Record<string, string> = {
-    "full-time": "bg-green-100 text-green-800",
-    "part-time": "bg-blue-100 text-blue-800",
-    "contract": "bg-purple-100 text-purple-800",
-    "casual": "bg-orange-100 text-orange-800",
+    "full-time": "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
+    "part-time": "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100",
+    "contract": "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100",
+    "internship": "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100",
+    "remote": "bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-100",
+  };
+
+  const categoryLabels: Record<string, string> = {
+    "technology": "Technology",
+    "design": "Design",
+    "data": "Data & Analytics",
+    "management": "Management",
+    "support": "IT Support",
+    "marketing": "Marketing",
+    "other": "Other",
+  };
+
+  const experienceLabels: Record<string, string> = {
+    "entry": "Entry Level",
+    "junior": "Junior",
+    "mid": "Mid-Level",
+    "senior": "Senior",
+    "lead": "Lead",
   };
 
   return (
@@ -31,11 +50,18 @@ function JobCard({ job, isAdmin }: { job: Job; isAdmin: boolean }) {
       
       <CardHeader className="pb-2">
         <div className="flex flex-wrap justify-between items-start gap-2">
-          <Badge 
-            className={`${jobTypeColors[job.jobType || "full-time"] || "bg-gray-100 text-gray-800"}`}
-          >
-            {(job.jobType || "full-time").replace("-", " ").replace(/\b\w/g, l => l.toUpperCase())}
-          </Badge>
+          <div className="flex flex-wrap gap-1">
+            <Badge 
+              className={`${jobTypeColors[job.jobType || "full-time"] || "bg-gray-100 text-gray-800"}`}
+            >
+              {(job.jobType || "full-time").replace("-", " ").replace(/\b\w/g, l => l.toUpperCase())}
+            </Badge>
+            {job.category && (
+              <Badge variant="secondary" className="text-xs">
+                {categoryLabels[job.category] || job.category}
+              </Badge>
+            )}
+          </div>
           <Badge variant="outline" className="font-mono text-xs">
             <Clock className="h-3 w-3 mr-1" />
             {job.createdAt ? format(new Date(job.createdAt), "dd MMM yyyy") : "Recent"}
@@ -44,6 +70,12 @@ function JobCard({ job, isAdmin }: { job: Job; isAdmin: boolean }) {
         <CardTitle className="text-xl font-display text-primary mt-2">
           {job.title}
         </CardTitle>
+        {job.experienceLevel && (
+          <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+            <GraduationCap className="h-3 w-3" />
+            <span>{experienceLabels[job.experienceLevel] || job.experienceLevel}</span>
+          </div>
+        )}
       </CardHeader>
 
       <CardContent className="space-y-3">
@@ -67,6 +99,22 @@ function JobCard({ job, isAdmin }: { job: Job; isAdmin: boolean }) {
         <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
           {job.description}
         </p>
+
+        {job.skills && job.skills.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {job.skills.slice(0, 5).map((skill, index) => (
+              <Badge key={index} variant="outline" className="text-xs bg-primary/5">
+                <Code className="h-2.5 w-2.5 mr-1" />
+                {skill}
+              </Badge>
+            ))}
+            {job.skills.length > 5 && (
+              <Badge variant="outline" className="text-xs">
+                +{job.skills.length - 5} more
+              </Badge>
+            )}
+          </div>
+        )}
 
         {job.requirements && (
           <div className="bg-muted/50 p-3 rounded-lg">
@@ -122,10 +170,10 @@ export default function JobsPage() {
           <div>
             <h1 className="text-3xl font-display font-bold text-foreground flex items-center gap-2">
               <Briefcase className="h-8 w-8 text-secondary" />
-              Transport Jobs
+              Career Opportunities
             </h1>
             <p className="text-muted-foreground mt-1">
-              Find bus driver and transport-related job opportunities.
+              Join our team and help grow critical skills in South Africa.
             </p>
           </div>
           
@@ -145,9 +193,9 @@ export default function JobsPage() {
         ) : (
           <div className="text-center py-16">
             <Briefcase className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h2 className="text-xl font-bold mb-2">No Jobs Available</h2>
+            <h2 className="text-xl font-bold mb-2">No Positions Available</h2>
             <p className="text-muted-foreground">
-              Check back later for new job opportunities.
+              We're always looking for talented people. Check back soon for new career opportunities.
             </p>
           </div>
         )}

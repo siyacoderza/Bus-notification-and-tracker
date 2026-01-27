@@ -32,6 +32,7 @@ import { useCreateJob } from "@/hooks/use-jobs";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Loader2 } from "lucide-react";
 
+// Custom form schema for job creation with form-friendly types
 const jobFormSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
@@ -41,6 +42,9 @@ const jobFormSchema = z.object({
   salary: z.string().optional(),
   requirements: z.string().optional(),
   jobType: z.string().default("full-time"),
+  category: z.string().default("technology"),
+  experienceLevel: z.string().default("mid"),
+  skillsInput: z.string().optional(), // Comma-separated skills input for the form
   isActive: z.boolean().default(true),
 });
 
@@ -62,13 +66,27 @@ export function CreateJobDialog() {
       salary: "",
       requirements: "",
       jobType: "full-time",
+      category: "technology",
+      skillsInput: "",
+      experienceLevel: "mid",
       isActive: true,
     },
   });
 
   const onSubmit = async (data: JobFormValues) => {
     try {
-      await createJob.mutateAsync(data);
+      // Convert comma-separated skills string to array
+      const skillsArray = data.skillsInput 
+        ? data.skillsInput.split(',').map(s => s.trim()).filter(s => s.length > 0)
+        : [];
+      
+      // Remove skillsInput and add skills array
+      const { skillsInput, ...restData } = data;
+      
+      await createJob.mutateAsync({
+        ...restData,
+        skills: skillsArray,
+      });
       toast({
         title: "Job Posted",
         description: "The job listing has been created successfully.",
@@ -96,7 +114,7 @@ export function CreateJobDialog() {
         <DialogHeader>
           <DialogTitle>Post a New Job</DialogTitle>
           <DialogDescription>
-            Create a job listing for bus drivers or transport-related positions.
+            Create a job listing for technical and professional positions.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -108,7 +126,7 @@ export function CreateJobDialog() {
                 <FormItem>
                   <FormLabel>Job Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Bus Driver" {...field} data-testid="input-job-title" />
+                    <Input placeholder="e.g., Software Developer" {...field} data-testid="input-job-title" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -122,7 +140,7 @@ export function CreateJobDialog() {
                 <FormItem>
                   <FormLabel>Company</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Putco" {...field} data-testid="input-job-company" />
+                    <Input placeholder="e.g., MzansiMove" {...field} data-testid="input-job-company" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -159,9 +177,81 @@ export function CreateJobDialog() {
                       <SelectItem value="full-time">Full Time</SelectItem>
                       <SelectItem value="part-time">Part Time</SelectItem>
                       <SelectItem value="contract">Contract</SelectItem>
-                      <SelectItem value="casual">Casual</SelectItem>
+                      <SelectItem value="internship">Internship</SelectItem>
+                      <SelectItem value="remote">Remote</SelectItem>
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Category</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger data-testid="select-job-category">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="technology">Technology / Development</SelectItem>
+                      <SelectItem value="design">Design / UI/UX</SelectItem>
+                      <SelectItem value="data">Data / Analytics</SelectItem>
+                      <SelectItem value="management">Project Management</SelectItem>
+                      <SelectItem value="support">IT Support</SelectItem>
+                      <SelectItem value="marketing">Marketing / Digital</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="experienceLevel"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Experience Level</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger data-testid="select-experience-level">
+                        <SelectValue placeholder="Select experience level" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="entry">Entry Level / Graduate</SelectItem>
+                      <SelectItem value="junior">Junior (1-2 years)</SelectItem>
+                      <SelectItem value="mid">Mid-Level (3-5 years)</SelectItem>
+                      <SelectItem value="senior">Senior (5+ years)</SelectItem>
+                      <SelectItem value="lead">Lead / Principal</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="skillsInput"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Skills (Optional)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="e.g., React, TypeScript, Node.js, Python" 
+                      {...field} 
+                      data-testid="input-job-skills"
+                    />
+                  </FormControl>
+                  <p className="text-xs text-muted-foreground">Separate skills with commas</p>
                   <FormMessage />
                 </FormItem>
               )}
@@ -208,7 +298,7 @@ export function CreateJobDialog() {
                   <FormLabel>Requirements (Optional)</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="e.g., Valid PDP license, 3 years experience..." 
+                      placeholder="e.g., 3+ years experience in React, Node.js knowledge..." 
                       className="min-h-[80px]"
                       {...field} 
                       data-testid="input-job-requirements"

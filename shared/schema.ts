@@ -91,6 +91,9 @@ export const jobs = pgTable("jobs", {
   company: text("company").notNull(),
   contactInfo: text("contact_info").notNull(),
   jobType: text("job_type").default("full-time"),
+  category: text("category").default("technology"), // technology, design, data, management, support, other
+  skills: text("skills").array(), // Array of skill tags
+  experienceLevel: text("experience_level").default("mid"), // junior, mid, senior, lead
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
