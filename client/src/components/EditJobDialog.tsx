@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -28,15 +28,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCreateJob } from "@/hooks/use-jobs";
+import { useUpdateJob } from "@/hooks/use-jobs";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Loader2, Calendar } from "lucide-react";
+import { Pencil, Loader2, Calendar } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { type Job } from "@shared/schema";
 
-// Custom form schema for job creation with form-friendly types
 const jobFormSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
@@ -48,61 +48,85 @@ const jobFormSchema = z.object({
   jobType: z.string().default("full-time"),
   category: z.string().default("technology"),
   experienceLevel: z.string().default("mid"),
-  skillsInput: z.string().optional(), // Comma-separated skills input for the form
-  expiryDate: z.date().optional(), // When the job posting expires
+  skillsInput: z.string().optional(),
+  expiryDate: z.date().optional().nullable(),
   isActive: z.boolean().default(true),
 });
 
 type JobFormValues = z.infer<typeof jobFormSchema>;
 
-export function CreateJobDialog() {
+interface EditJobDialogProps {
+  job: Job;
+}
+
+export function EditJobDialog({ job }: EditJobDialogProps) {
   const [open, setOpen] = useState(false);
-  const createJob = useCreateJob();
+  const updateJob = useUpdateJob();
   const { toast } = useToast();
 
   const form = useForm<JobFormValues>({
     resolver: zodResolver(jobFormSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      location: "",
-      company: "",
-      contactInfo: "",
-      salary: "",
-      requirements: "",
-      jobType: "full-time",
-      category: "technology",
-      skillsInput: "",
-      experienceLevel: "mid",
-      expiryDate: undefined,
-      isActive: true,
+      title: job.title,
+      description: job.description,
+      location: job.location,
+      company: job.company,
+      contactInfo: job.contactInfo,
+      salary: job.salary || "",
+      requirements: job.requirements || "",
+      jobType: job.jobType || "full-time",
+      category: job.category || "technology",
+      skillsInput: job.skills?.join(", ") || "",
+      experienceLevel: job.experienceLevel || "mid",
+      expiryDate: job.expiryDate ? new Date(job.expiryDate) : undefined,
+      isActive: job.isActive ?? true,
     },
   });
 
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        title: job.title,
+        description: job.description,
+        location: job.location,
+        company: job.company,
+        contactInfo: job.contactInfo,
+        salary: job.salary || "",
+        requirements: job.requirements || "",
+        jobType: job.jobType || "full-time",
+        category: job.category || "technology",
+        skillsInput: job.skills?.join(", ") || "",
+        experienceLevel: job.experienceLevel || "mid",
+        expiryDate: job.expiryDate ? new Date(job.expiryDate) : undefined,
+        isActive: job.isActive ?? true,
+      });
+    }
+  }, [open, job, form]);
+
   const onSubmit = async (data: JobFormValues) => {
     try {
-      // Convert comma-separated skills string to array
       const skillsArray = data.skillsInput 
         ? data.skillsInput.split(',').map(s => s.trim()).filter(s => s.length > 0)
         : [];
       
-      // Remove skillsInput and add skills array
       const { skillsInput, ...restData } = data;
       
-      await createJob.mutateAsync({
-        ...restData,
-        skills: skillsArray,
+      await updateJob.mutateAsync({
+        id: job.id,
+        data: {
+          ...restData,
+          skills: skillsArray,
+        },
       });
       toast({
-        title: "Job Posted",
-        description: "The job listing has been created successfully.",
+        title: "Job Updated",
+        description: "The job listing has been updated successfully.",
       });
-      form.reset();
       setOpen(false);
     } catch (err) {
       toast({
         title: "Error",
-        description: "Failed to create job listing.",
+        description: "Failed to update job listing.",
         variant: "destructive",
       });
     }
@@ -111,16 +135,15 @@ export function CreateJobDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2" data-testid="button-create-job">
-          <Plus className="h-4 w-4" />
-          Post Job
+        <Button variant="outline" size="icon" data-testid={`button-edit-job-${job.id}`}>
+          <Pencil className="h-4 w-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Post a New Job</DialogTitle>
+          <DialogTitle>Edit Job</DialogTitle>
           <DialogDescription>
-            Create a job listing for technical and professional positions.
+            Update the job listing details.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -132,7 +155,7 @@ export function CreateJobDialog() {
                 <FormItem>
                   <FormLabel>Job Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Software Developer" {...field} data-testid="input-job-title" />
+                    <Input placeholder="e.g., Software Developer" {...field} data-testid="input-edit-job-title" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -146,7 +169,7 @@ export function CreateJobDialog() {
                 <FormItem>
                   <FormLabel>Company</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., MzansiMove" {...field} data-testid="input-job-company" />
+                    <Input placeholder="e.g., MzansiMove" {...field} data-testid="input-edit-job-company" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -160,7 +183,7 @@ export function CreateJobDialog() {
                 <FormItem>
                   <FormLabel>Location</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Johannesburg, Gauteng" {...field} data-testid="input-job-location" />
+                    <Input placeholder="e.g., Johannesburg, Gauteng" {...field} data-testid="input-edit-job-location" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -173,9 +196,9 @@ export function CreateJobDialog() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Job Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger data-testid="select-job-type">
+                      <SelectTrigger data-testid="select-edit-job-type">
                         <SelectValue placeholder="Select job type" />
                       </SelectTrigger>
                     </FormControl>
@@ -198,9 +221,9 @@ export function CreateJobDialog() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Category</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger data-testid="select-job-category">
+                      <SelectTrigger data-testid="select-edit-job-category">
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                     </FormControl>
@@ -225,9 +248,9 @@ export function CreateJobDialog() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Experience Level</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger data-testid="select-experience-level">
+                      <SelectTrigger data-testid="select-edit-experience-level">
                         <SelectValue placeholder="Select experience level" />
                       </SelectTrigger>
                     </FormControl>
@@ -254,7 +277,7 @@ export function CreateJobDialog() {
                     <Input 
                       placeholder="e.g., React, TypeScript, Node.js, Python" 
                       {...field} 
-                      data-testid="input-job-skills"
+                      data-testid="input-edit-job-skills"
                     />
                   </FormControl>
                   <p className="text-xs text-muted-foreground">Separate skills with commas</p>
@@ -270,7 +293,7 @@ export function CreateJobDialog() {
                 <FormItem>
                   <FormLabel>Salary (Optional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., R15,000 - R20,000 per month" {...field} data-testid="input-job-salary" />
+                    <Input placeholder="e.g., R15,000 - R20,000 per month" {...field} data-testid="input-edit-job-salary" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -292,7 +315,7 @@ export function CreateJobDialog() {
                             "w-full pl-3 text-left font-normal",
                             !field.value && "text-muted-foreground"
                           )}
-                          data-testid="button-expiry-date"
+                          data-testid="button-edit-expiry-date"
                         >
                           {field.value ? (
                             format(field.value, "PPP")
@@ -306,7 +329,7 @@ export function CreateJobDialog() {
                     <PopoverContent className="w-auto p-0" align="start">
                       <CalendarComponent
                         mode="single"
-                        selected={field.value}
+                        selected={field.value || undefined}
                         onSelect={field.onChange}
                         disabled={(date) => date < new Date()}
                         initialFocus
@@ -330,7 +353,7 @@ export function CreateJobDialog() {
                       placeholder="Describe the job role and responsibilities..." 
                       className="min-h-[100px]"
                       {...field} 
-                      data-testid="input-job-description"
+                      data-testid="input-edit-job-description"
                     />
                   </FormControl>
                   <FormMessage />
@@ -349,7 +372,7 @@ export function CreateJobDialog() {
                       placeholder="e.g., 3+ years experience in React, Node.js knowledge..." 
                       className="min-h-[80px]"
                       {...field} 
-                      data-testid="input-job-requirements"
+                      data-testid="input-edit-job-requirements"
                     />
                   </FormControl>
                   <FormMessage />
@@ -367,7 +390,7 @@ export function CreateJobDialog() {
                     <Input 
                       placeholder="e.g., WhatsApp: 082 123 4567 or email@company.co.za" 
                       {...field} 
-                      data-testid="input-job-contact"
+                      data-testid="input-edit-job-contact"
                     />
                   </FormControl>
                   <FormMessage />
@@ -378,16 +401,16 @@ export function CreateJobDialog() {
             <Button
               type="submit"
               className="w-full"
-              disabled={createJob.isPending}
-              data-testid="button-submit-job"
+              disabled={updateJob.isPending}
+              data-testid="button-submit-edit-job"
             >
-              {createJob.isPending ? (
+              {updateJob.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Posting...
+                  Updating...
                 </>
               ) : (
-                "Post Job"
+                "Update Job"
               )}
             </Button>
           </form>

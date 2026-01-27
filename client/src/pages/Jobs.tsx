@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { useJobs, useDeleteJob } from "@/hooks/use-jobs";
 import { useAdminMode } from "@/hooks/use-admin-mode";
 import { CreateJobDialog } from "@/components/CreateJobDialog";
+import { EditJobDialog } from "@/components/EditJobDialog";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Briefcase, MapPin, Building2, Phone, Loader2, Trash2, Clock, Banknote, Code, GraduationCap } from "lucide-react";
-import { format } from "date-fns";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Briefcase, MapPin, Building2, Phone, Loader2, Trash2, Clock, Banknote, Code, GraduationCap, CalendarX, Filter } from "lucide-react";
+import { format, isPast } from "date-fns";
 import { type Job } from "@shared/schema";
 
 function JobCard({ job, isAdmin }: { job: Job; isAdmin: boolean }) {
@@ -44,9 +47,11 @@ function JobCard({ job, isAdmin }: { job: Job; isAdmin: boolean }) {
     "lead": "Lead",
   };
 
+  const isExpired = job.expiryDate && isPast(new Date(job.expiryDate));
+
   return (
-    <Card className="group hover:shadow-lg hover:border-primary/20 transition-all duration-300 relative overflow-hidden" data-testid={`job-card-${job.id}`}>
-      <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-secondary to-secondary/50 group-hover:w-2 transition-all duration-300" />
+    <Card className={`group hover:shadow-lg hover:border-primary/20 transition-all duration-300 relative overflow-hidden ${isExpired ? 'opacity-60' : ''}`} data-testid={`job-card-${job.id}`}>
+      <div className={`absolute top-0 left-0 w-1 h-full ${isExpired ? 'bg-gradient-to-b from-destructive to-destructive/50' : 'bg-gradient-to-b from-secondary to-secondary/50'} group-hover:w-2 transition-all duration-300`} />
       
       <CardHeader className="pb-2">
         <div className="flex flex-wrap justify-between items-start gap-2">
@@ -61,11 +66,25 @@ function JobCard({ job, isAdmin }: { job: Job; isAdmin: boolean }) {
                 {categoryLabels[job.category] || job.category}
               </Badge>
             )}
+            {isExpired && isAdmin && (
+              <Badge variant="destructive" className="text-xs">
+                <CalendarX className="h-3 w-3 mr-1" />
+                Expired
+              </Badge>
+            )}
           </div>
-          <Badge variant="outline" className="font-mono text-xs">
-            <Clock className="h-3 w-3 mr-1" />
-            {job.createdAt ? format(new Date(job.createdAt), "dd MMM yyyy") : "Recent"}
-          </Badge>
+          <div className="flex flex-col items-end gap-1">
+            <Badge variant="outline" className="font-mono text-xs">
+              <Clock className="h-3 w-3 mr-1" />
+              {job.createdAt ? format(new Date(job.createdAt), "dd MMM yyyy") : "Recent"}
+            </Badge>
+            {job.expiryDate && (
+              <Badge variant={isExpired ? "destructive" : "outline"} className="font-mono text-xs">
+                <CalendarX className="h-3 w-3 mr-1" />
+                {isExpired ? "Expired" : `Expires ${format(new Date(job.expiryDate), "dd MMM yyyy")}`}
+              </Badge>
+            )}
+          </div>
         </div>
         <CardTitle className="text-xl font-display text-primary mt-2">
           {job.title}
@@ -134,23 +153,26 @@ function JobCard({ job, isAdmin }: { job: Job; isAdmin: boolean }) {
         </div>
 
         {isAdmin && (
-          <Button 
-            variant="destructive" 
-            size="sm"
-            className="w-full"
-            onClick={handleDelete}
-            disabled={deleteJob.isPending}
-            data-testid={`button-delete-job-${job.id}`}
-          >
-            {deleteJob.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <>
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete Job
-              </>
-            )}
-          </Button>
+          <div className="w-full flex gap-2">
+            <EditJobDialog job={job} />
+            <Button 
+              variant="destructive" 
+              size="sm"
+              className="flex-1"
+              onClick={handleDelete}
+              disabled={deleteJob.isPending}
+              data-testid={`button-delete-job-${job.id}`}
+            >
+              {deleteJob.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </>
+              )}
+            </Button>
+          </div>
         )}
       </CardFooter>
     </Card>
@@ -159,7 +181,23 @@ function JobCard({ job, isAdmin }: { job: Job; isAdmin: boolean }) {
 
 export default function JobsPage() {
   const { isAdmin } = useAdminMode();
-  const { data: jobs, isLoading } = useJobs();
+  const { data: jobs, isLoading } = useJobs(!isAdmin); // Show all jobs to admin, only active to public
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+
+  const categoryLabels: Record<string, string> = {
+    "all": "All Categories",
+    "technology": "Technology",
+    "design": "Design",
+    "data": "Data & Analytics",
+    "management": "Management",
+    "support": "IT Support",
+    "marketing": "Marketing",
+    "other": "Other",
+  };
+
+  const filteredJobs = jobs?.filter(job => 
+    selectedCategory === "all" || job.category === selectedCategory
+  );
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -177,25 +215,42 @@ export default function JobsPage() {
             </p>
           </div>
           
-          {isAdmin && <CreateJobDialog />}
+          <div className="flex flex-wrap gap-2">
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-[180px]" data-testid="select-category-filter">
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Filter by category" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(categoryLabels).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>{label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {isAdmin && <CreateJobDialog />}
+          </div>
         </div>
 
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
-        ) : jobs && jobs.length > 0 ? (
+        ) : filteredJobs && filteredJobs.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {jobs.map((job) => (
+            {filteredJobs.map((job) => (
               <JobCard key={job.id} job={job} isAdmin={isAdmin} />
             ))}
           </div>
         ) : (
           <div className="text-center py-16">
             <Briefcase className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h2 className="text-xl font-bold mb-2">No Positions Available</h2>
+            <h2 className="text-xl font-bold mb-2">
+              {selectedCategory !== "all" ? "No Jobs in This Category" : "No Positions Available"}
+            </h2>
             <p className="text-muted-foreground">
-              We're always looking for talented people. Check back soon for new career opportunities.
+              {selectedCategory !== "all" 
+                ? "Try selecting a different category or check back later."
+                : "We're always looking for talented people. Check back soon for new career opportunities."}
             </p>
           </div>
         )}

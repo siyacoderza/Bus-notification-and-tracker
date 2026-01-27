@@ -30,7 +30,7 @@ import {
   type Job,
   type InsertJob,
 } from "@shared/schema";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, or, gt, isNull } from "drizzle-orm";
 
 export interface IStorage {
   // Routes
@@ -315,7 +315,16 @@ export class DatabaseStorage implements IStorage {
   // Jobs
   async getJobs(activeOnly: boolean = true): Promise<Job[]> {
     if (activeOnly) {
-      return await db.select().from(jobs).where(eq(jobs.isActive, true)).orderBy(desc(jobs.createdAt));
+      const now = new Date();
+      return await db.select().from(jobs).where(
+        and(
+          eq(jobs.isActive, true),
+          or(
+            isNull(jobs.expiryDate),
+            gt(jobs.expiryDate, now)
+          )
+        )
+      ).orderBy(desc(jobs.createdAt));
     }
     return await db.select().from(jobs).orderBy(desc(jobs.createdAt));
   }
