@@ -202,7 +202,10 @@ export const insertNotificationSchema = createInsertSchema(notifications).omit({
 export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({ id: true, createdAt: true });
 export const insertReviewSchema = createInsertSchema(reviews).omit({ id: true, createdAt: true });
 export const insertJobSchema = createInsertSchema(jobs).omit({ id: true, createdAt: true });
-export const insertAdvertisementSchema = createInsertSchema(advertisements).omit({ id: true, createdAt: true });
+export const insertAdvertisementSchema = createInsertSchema(advertisements).omit({ id: true, createdAt: true }).extend({
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+});
 
 // === EXPLICIT API CONTRACT TYPES ===
 
