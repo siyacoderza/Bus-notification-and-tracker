@@ -94,6 +94,7 @@ export const jobs = pgTable("jobs", {
   category: text("category").default("technology"), // technology, design, data, management, support, other
   skills: text("skills").array(), // Array of skill tags
   experienceLevel: text("experience_level").default("mid"), // junior, mid, senior, lead
+  expiryDate: timestamp("expiry_date"), // When the job posting expires
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
