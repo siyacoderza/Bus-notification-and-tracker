@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { Bus, Home, MapPin, Bell, Share2, Menu, Star, Shield, Briefcase } from "lucide-react";
+import { Bus, Home, MapPin, Bell, Share2, Menu, Star, Shield, Briefcase, Megaphone } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useToast } from "@/hooks/use-toast";
@@ -36,6 +36,7 @@ export function Navbar() {
     { href: "/notifications", label: "Alerts", icon: Bell },
     { href: "/reviews", label: "Reviews", icon: Star },
     { href: "/jobs", label: "Jobs", icon: Briefcase },
+    { href: "/advertisements", label: "Sponsors", icon: Megaphone },
   ];
 
   return (

@@ -10,6 +10,7 @@ import {
   provinces,
   municipalities,
   jobs,
+  advertisements,
   type BusRoute,
   type InsertBusRoute,
   type Notification,
@@ -29,8 +30,10 @@ import {
   type InsertMunicipality,
   type Job,
   type InsertJob,
+  type Advertisement,
+  type InsertAdvertisement,
 } from "@shared/schema";
-import { eq, desc, and, or, gt, isNull } from "drizzle-orm";
+import { eq, desc, and, or, gt, lte, isNull } from "drizzle-orm";
 
 export interface IStorage {
   // Routes
@@ -80,6 +83,14 @@ export interface IStorage {
   createJob(job: InsertJob): Promise<Job>;
   updateJob(id: number, updates: Partial<InsertJob>): Promise<Job>;
   deleteJob(id: number): Promise<void>;
+
+  // Advertisements
+  getAdvertisements(activeOnly?: boolean): Promise<Advertisement[]>;
+  getAdvertisement(id: number): Promise<Advertisement | undefined>;
+  getActiveAdsForRoute(routeId: number): Promise<Advertisement[]>;
+  createAdvertisement(ad: InsertAdvertisement): Promise<Advertisement>;
+  updateAdvertisement(id: number, updates: Partial<InsertAdvertisement>): Promise<Advertisement>;
+  deleteAdvertisement(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -346,6 +357,56 @@ export class DatabaseStorage implements IStorage {
 
   async deleteJob(id: number): Promise<void> {
     await db.delete(jobs).where(eq(jobs.id, id));
+  }
+
+  // Advertisements
+  async getAdvertisements(activeOnly: boolean = true): Promise<Advertisement[]> {
+    if (activeOnly) {
+      const now = new Date();
+      return await db.select().from(advertisements).where(
+        and(
+          eq(advertisements.isActive, true),
+          lte(advertisements.startDate, now),
+          gt(advertisements.endDate, now)
+        )
+      ).orderBy(desc(advertisements.createdAt));
+    }
+    return await db.select().from(advertisements).orderBy(desc(advertisements.createdAt));
+  }
+
+  async getAdvertisement(id: number): Promise<Advertisement | undefined> {
+    const [ad] = await db.select().from(advertisements).where(eq(advertisements.id, id));
+    return ad;
+  }
+
+  async getActiveAdsForRoute(routeId: number): Promise<Advertisement[]> {
+    const now = new Date();
+    const allActiveAds = await db.select().from(advertisements).where(
+      and(
+        eq(advertisements.isActive, true),
+        lte(advertisements.startDate, now),
+        gt(advertisements.endDate, now)
+      )
+    );
+    
+    // Filter ads that apply to this route (routeIds is null = all routes, or contains this routeId)
+    return allActiveAds.filter(ad => 
+      !ad.routeIds || ad.routeIds.length === 0 || ad.routeIds.includes(routeId)
+    );
+  }
+
+  async createAdvertisement(ad: InsertAdvertisement): Promise<Advertisement> {
+    const [newAd] = await db.insert(advertisements).values(ad).returning();
+    return newAd;
+  }
+
+  async updateAdvertisement(id: number, updates: Partial<InsertAdvertisement>): Promise<Advertisement> {
+    const [updated] = await db.update(advertisements).set(updates).where(eq(advertisements.id, id)).returning();
+    return updated;
+  }
+
+  async deleteAdvertisement(id: number): Promise<void> {
+    await db.delete(advertisements).where(eq(advertisements.id, id));
   }
 }
 

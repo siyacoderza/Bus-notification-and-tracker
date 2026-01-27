@@ -2,7 +2,7 @@ import { type BusRoute } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Bus, Trash2, Users, Loader2, Pin, EyeOff, PinOff, Eye, Edit2, Share2, Clock } from "lucide-react";
+import { MapPin, Bus, Trash2, Users, Loader2, Pin, EyeOff, PinOff, Eye, Edit2, Share2, Clock, Megaphone } from "lucide-react";
 import { useSubscribe, useUnsubscribe, useSubscriptions } from "@/hooks/use-subscriptions";
 import { useAuth } from "@/hooks/use-auth";
 import { useDeleteRoute } from "@/hooks/use-routes";
@@ -10,6 +10,7 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { EditRouteDialog } from "./EditRouteDialog";
 import { useDriverMode } from "@/hooks/use-driver-mode";
+import { useRouteAdvertisements } from "@/hooks/use-advertisements";
 
 import { ReviewList, ReviewForm } from "./reviews";
 
@@ -93,6 +94,8 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
 
   const { isDriver } = useDriverMode();
   const waitingCount = route.waitingCount || 0;
+  const { data: routeAds } = useRouteAdvertisements(route.id);
+  const hasActiveAds = routeAds && routeAds.length > 0;
 
   const incrementWaiting = useMutation({
     mutationFn: async () => {
@@ -123,6 +126,11 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
               {isPinned && (
                 <Badge variant="secondary" className="w-fit bg-secondary text-secondary-foreground flex items-center gap-1 shrink-0">
                   <Pin className="h-3 w-3" /> Pinned
+                </Badge>
+              )}
+              {hasActiveAds && (
+                <Badge className="w-fit bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100 flex items-center gap-1 shrink-0">
+                  <Megaphone className="h-3 w-3" /> Sponsored
                 </Badge>
               )}
             </div>

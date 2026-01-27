@@ -1,15 +1,19 @@
 import { useRoute } from "@/hooks/use-routes";
 import { RouteCard } from "@/components/RouteCard";
-import { Loader2, ArrowLeft, Bus } from "lucide-react";
+import { Loader2, ArrowLeft, Bus, Megaphone, ExternalLink } from "lucide-react";
 import { Link, useRoute as useWouterRoute } from "wouter";
 import { Button } from "@/components/ui/button";
 import { RouteChat } from "@/components/RouteChat";
 import { RouteMap } from "@/components/RouteMap";
+import { useRouteAdvertisements } from "@/hooks/use-advertisements";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export default function RouteDetails() {
   const [, params] = useWouterRoute("/route/:id");
   const routeId = params?.id ? parseInt(params.id) : -1;
   const { data: routes, isLoading } = useRoute(routeId === -1 ? 0 : routeId);
+  const { data: routeAds } = useRouteAdvertisements(routeId);
 
   // useRoute hook returns a single route object based on the API contract in shared/routes.ts
   const route = routes;
@@ -56,6 +60,44 @@ export default function RouteDetails() {
       </div>
 
       <div className="max-w-3xl mx-auto px-4 -mt-8">
+        {routeAds && routeAds.length > 0 && (
+          <Card className="mb-4 bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 border-amber-200 dark:border-amber-800">
+            <CardContent className="py-4">
+              <div className="flex items-start gap-3">
+                <div className="shrink-0">
+                  <Badge className="bg-amber-500 text-white">
+                    <Megaphone className="h-3 w-3 mr-1" />
+                    Sponsored
+                  </Badge>
+                </div>
+                <div className="flex-1 min-w-0">
+                  {routeAds.map((ad) => (
+                    <div key={ad.id} className="flex flex-col gap-2">
+                      <div className="flex items-center gap-2">
+                        {ad.sponsorLogo && (
+                          <img src={ad.sponsorLogo} alt={ad.sponsorName} className="h-8 w-8 object-contain rounded" />
+                        )}
+                        <span className="font-bold text-amber-900 dark:text-amber-100">{ad.sponsorName}</span>
+                      </div>
+                      <p className="text-sm text-amber-800 dark:text-amber-200">{ad.message}</p>
+                      {ad.linkUrl && (
+                        <a 
+                          href={ad.linkUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-sm text-amber-700 dark:text-amber-300 hover:underline"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          Learn More
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
         <RouteCard route={route} showAdminControls={false} />
         <RouteMap routeId={route.id} />
         <RouteChat routeId={route.id} />

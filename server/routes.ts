@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
-import { insertReviewSchema, insertJobSchema } from "@shared/schema";
+import { insertReviewSchema, insertJobSchema, insertAdvertisementSchema } from "@shared/schema";
 
 const isDriverVerified = (req: any, res: Response, next: NextFunction) => {
   if (req.session?.isDriver) {
@@ -338,6 +338,59 @@ export async function registerRoutes(
 
   app.delete("/api/jobs/:id", isAdminVerified, async (req, res) => {
     await storage.deleteJob(Number(req.params.id));
+    res.status(204).send();
+  });
+
+  // === Advertisements API ===
+  app.get("/api/advertisements", async (req, res) => {
+    const activeOnly = req.query.active !== "false";
+    const ads = await storage.getAdvertisements(activeOnly);
+    res.json(ads);
+  });
+
+  app.get("/api/advertisements/:id", async (req, res) => {
+    const ad = await storage.getAdvertisement(Number(req.params.id));
+    if (!ad) {
+      return res.status(404).json({ message: "Advertisement not found" });
+    }
+    res.json(ad);
+  });
+
+  app.get("/api/routes/:id/advertisements", async (req, res) => {
+    const routeId = Number(req.params.id);
+    const ads = await storage.getActiveAdsForRoute(routeId);
+    res.json(ads);
+  });
+
+  app.post("/api/advertisements", isAdminVerified, async (req, res) => {
+    try {
+      const input = insertAdvertisementSchema.parse(req.body);
+      const ad = await storage.createAdvertisement(input);
+      res.status(201).json(ad);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      throw err;
+    }
+  });
+
+  app.put("/api/advertisements/:id", isAdminVerified, async (req, res) => {
+    try {
+      const partialSchema = insertAdvertisementSchema.partial();
+      const updates = partialSchema.parse(req.body);
+      const ad = await storage.updateAdvertisement(Number(req.params.id), updates);
+      res.json(ad);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      res.status(400).json({ message: "Invalid input" });
+    }
+  });
+
+  app.delete("/api/advertisements/:id", isAdminVerified, async (req, res) => {
+    await storage.deleteAdvertisement(Number(req.params.id));
     res.status(204).send();
   });
 
