@@ -13,12 +13,14 @@ import ReviewsPage from "@/pages/Reviews";
 import JobsPage from "@/pages/Jobs";
 import AdvertisementsPage from "@/pages/Advertisements";
 import { Footer } from "@/components/Footer";
+import { Navbar } from "@/components/Navbar";
 
 import AuthPage from "@/pages/AuthPage";
 
 function Router() {
   return (
     <div className="flex flex-col min-h-screen">
+      <Navbar />
       <main className="flex-grow">
         <Switch>
           <Route path="/" component={Home} />
