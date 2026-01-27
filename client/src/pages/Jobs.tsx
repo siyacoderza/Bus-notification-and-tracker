@@ -8,11 +8,12 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/componen
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Briefcase, MapPin, Building2, Phone, Loader2, Trash2, Clock, Banknote, Code, GraduationCap, CalendarX, Filter } from "lucide-react";
+import { Briefcase, MapPin, Building2, Phone, Loader2, Trash2, Clock, Banknote, Code, GraduationCap, CalendarX, Filter, ChevronDown, ChevronUp } from "lucide-react";
 import { format, isPast } from "date-fns";
 import { type Job } from "@shared/schema";
 
 function JobCard({ job, isAdmin }: { job: Job; isAdmin: boolean }) {
+  const [isExpanded, setIsExpanded] = useState(false);
   const deleteJob = useDeleteJob();
 
   const handleDelete = () => {
@@ -115,9 +116,32 @@ function JobCard({ job, isAdmin }: { job: Job; isAdmin: boolean }) {
           </div>
         )}
 
-        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
-          {job.description}
-        </p>
+        <div>
+          <p className={`text-sm text-muted-foreground leading-relaxed ${!isExpanded ? 'line-clamp-3' : ''}`}>
+            {job.description}
+          </p>
+          {job.description && job.description.length > 150 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-auto p-0 mt-1 text-xs text-primary hover:text-primary/80"
+              onClick={() => setIsExpanded(!isExpanded)}
+              data-testid={`button-read-more-${job.id}`}
+            >
+              {isExpanded ? (
+                <>
+                  <ChevronUp className="h-3 w-3 mr-1" />
+                  Read Less
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="h-3 w-3 mr-1" />
+                  Read More
+                </>
+              )}
+            </Button>
+          )}
+        </div>
 
         {job.skills && job.skills.length > 0 && (
           <div className="flex flex-wrap gap-1">
