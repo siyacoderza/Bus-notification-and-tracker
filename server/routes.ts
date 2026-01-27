@@ -349,7 +349,11 @@ export async function registerRoutes(
   });
 
   app.get("/api/advertisements/:id", async (req, res) => {
-    const ad = await storage.getAdvertisement(Number(req.params.id));
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ message: "Invalid advertisement ID" });
+    }
+    const ad = await storage.getAdvertisement(id);
     if (!ad) {
       return res.status(404).json({ message: "Advertisement not found" });
     }
@@ -358,6 +362,9 @@ export async function registerRoutes(
 
   app.get("/api/routes/:id/advertisements", async (req, res) => {
     const routeId = Number(req.params.id);
+    if (isNaN(routeId)) {
+      return res.status(400).json({ message: "Invalid route ID" });
+    }
     const ads = await storage.getActiveAdsForRoute(routeId);
     res.json(ads);
   });
@@ -377,9 +384,13 @@ export async function registerRoutes(
 
   app.put("/api/advertisements/:id", isAdminVerified, async (req, res) => {
     try {
+      const id = Number(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid advertisement ID" });
+      }
       const partialSchema = insertAdvertisementSchema.partial();
       const updates = partialSchema.parse(req.body);
-      const ad = await storage.updateAdvertisement(Number(req.params.id), updates);
+      const ad = await storage.updateAdvertisement(id, updates);
       res.json(ad);
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -390,7 +401,11 @@ export async function registerRoutes(
   });
 
   app.delete("/api/advertisements/:id", isAdminVerified, async (req, res) => {
-    await storage.deleteAdvertisement(Number(req.params.id));
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ message: "Invalid advertisement ID" });
+    }
+    await storage.deleteAdvertisement(id);
     res.status(204).send();
   });
 
