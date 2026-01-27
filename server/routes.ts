@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
-import { insertReviewSchema, insertJobSchema, insertAdvertisementSchema } from "@shared/schema";
+import { insertReviewSchema, insertJobSchema, insertAdvertisementSchema, insertAdvertiserApplicationSchema } from "@shared/schema";
 
 const isDriverVerified = (req: any, res: Response, next: NextFunction) => {
   if (req.session?.isDriver) {
@@ -406,6 +406,59 @@ export async function registerRoutes(
       return res.status(400).json({ message: "Invalid advertisement ID" });
     }
     await storage.deleteAdvertisement(id);
+    res.status(204).send();
+  });
+
+  // Advertiser Applications
+  app.get("/api/advertiser-applications", isAdminVerified, async (req, res) => {
+    const applications = await storage.getAdvertiserApplications();
+    res.json(applications);
+  });
+
+  app.get("/api/advertiser-applications/:id", isAdminVerified, async (req, res) => {
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ message: "Invalid application ID" });
+    }
+    const app = await storage.getAdvertiserApplication(id);
+    if (!app) {
+      return res.status(404).json({ message: "Application not found" });
+    }
+    res.json(app);
+  });
+
+  app.post("/api/advertiser-applications", async (req, res) => {
+    try {
+      const input = insertAdvertiserApplicationSchema.parse(req.body);
+      const app = await storage.createAdvertiserApplication(input);
+      res.status(201).json(app);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      throw err;
+    }
+  });
+
+  app.patch("/api/advertiser-applications/:id/status", isAdminVerified, async (req, res) => {
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ message: "Invalid application ID" });
+    }
+    const { status } = req.body;
+    if (!status || !["pending", "approved", "rejected", "contacted"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status" });
+    }
+    const app = await storage.updateAdvertiserApplicationStatus(id, status);
+    res.json(app);
+  });
+
+  app.delete("/api/advertiser-applications/:id", isAdminVerified, async (req, res) => {
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ message: "Invalid application ID" });
+    }
+    await storage.deleteAdvertiserApplication(id);
     res.status(204).send();
   });
 

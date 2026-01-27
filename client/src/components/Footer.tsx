@@ -36,6 +36,12 @@ export function Footer() {
               <li>
                 <Link href="/jobs" className="hover:text-secondary transition-colors">Career Opportunities</Link>
               </li>
+              <li>
+                <Link href="/about" className="hover:text-secondary transition-colors">About Us</Link>
+              </li>
+              <li>
+                <Link href="/jobs" className="hover:text-secondary transition-colors">Skills & Hiring</Link>
+              </li>
             </ul>
           </div>
 
@@ -53,7 +59,7 @@ export function Footer() {
                 <a href="#" className="hover:text-secondary transition-colors">Terms of Service</a>
               </li>
               <li>
-                <span className="text-primary-foreground/60">Driver & Admin access available in navigation</span>
+                <Link href="/advertise" className="hover:text-secondary transition-colors">Advertise With Us</Link>
               </li>
             </ul>
           </div>

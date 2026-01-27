@@ -12,6 +12,8 @@ import SubscriptionsPage from "@/pages/Subscriptions";
 import ReviewsPage from "@/pages/Reviews";
 import JobsPage from "@/pages/Jobs";
 import AdvertisementsPage from "@/pages/Advertisements";
+import AboutPage from "@/pages/About";
+import AdvertisePage from "@/pages/Advertise";
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
 
@@ -31,6 +33,8 @@ function Router() {
           <Route path="/reviews" component={ReviewsPage} />
           <Route path="/jobs" component={JobsPage} />
           <Route path="/advertisements" component={AdvertisementsPage} />
+          <Route path="/about" component={AboutPage} />
+          <Route path="/advertise" component={AdvertisePage} />
           <Route component={NotFound} />
         </Switch>
       </main>

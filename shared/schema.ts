@@ -114,6 +114,25 @@ export const advertisements = pgTable("advertisements", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const advertiserApplications = pgTable("advertiser_applications", {
+  id: serial("id").primaryKey(),
+  companyName: text("company_name").notNull(),
+  contactName: text("contact_name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  website: text("website"),
+  industry: text("industry"),
+  placementType: text("placement_type").notNull(), // 'standard', 'premium', 'exclusive'
+  budget: text("budget"), // Monthly budget range
+  targetRoutes: text("target_routes"), // Description of which routes/areas
+  campaignGoals: text("campaign_goals"), // What they want to achieve
+  startDate: text("start_date"), // Preferred start date
+  duration: text("duration"), // Campaign duration preference
+  message: text("message"), // Additional notes
+  status: text("status").default("pending"), // 'pending', 'approved', 'rejected', 'contacted'
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const busRoutesRelations = relations(busRoutes, ({ many }) => ({
   notifications: many(notifications),
   subscriptions: many(subscriptions),
@@ -206,6 +225,7 @@ export const insertAdvertisementSchema = createInsertSchema(advertisements).omit
   startDate: z.coerce.date(),
   endDate: z.coerce.date(),
 });
+export const insertAdvertiserApplicationSchema = createInsertSchema(advertiserApplications).omit({ id: true, createdAt: true, status: true });
 
 // === EXPLICIT API CONTRACT TYPES ===
 
@@ -232,6 +252,9 @@ export type InsertJob = z.infer<typeof insertJobSchema>;
 
 export type Advertisement = typeof advertisements.$inferSelect;
 export type InsertAdvertisement = z.infer<typeof insertAdvertisementSchema>;
+
+export type AdvertiserApplication = typeof advertiserApplications.$inferSelect;
+export type InsertAdvertiserApplication = z.infer<typeof insertAdvertiserApplicationSchema>;
 
 // Request types
 export type CreateBusRouteRequest = InsertBusRoute;

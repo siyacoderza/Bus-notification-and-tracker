@@ -11,6 +11,7 @@ import {
   municipalities,
   jobs,
   advertisements,
+  advertiserApplications,
   type BusRoute,
   type InsertBusRoute,
   type Notification,
@@ -32,6 +33,8 @@ import {
   type InsertJob,
   type Advertisement,
   type InsertAdvertisement,
+  type AdvertiserApplication,
+  type InsertAdvertiserApplication,
 } from "@shared/schema";
 import { eq, desc, and, or, gt, lte, isNull } from "drizzle-orm";
 
@@ -91,6 +94,13 @@ export interface IStorage {
   createAdvertisement(ad: InsertAdvertisement): Promise<Advertisement>;
   updateAdvertisement(id: number, updates: Partial<InsertAdvertisement>): Promise<Advertisement>;
   deleteAdvertisement(id: number): Promise<void>;
+
+  // Advertiser Applications
+  getAdvertiserApplications(): Promise<AdvertiserApplication[]>;
+  getAdvertiserApplication(id: number): Promise<AdvertiserApplication | undefined>;
+  createAdvertiserApplication(app: InsertAdvertiserApplication): Promise<AdvertiserApplication>;
+  updateAdvertiserApplicationStatus(id: number, status: string): Promise<AdvertiserApplication>;
+  deleteAdvertiserApplication(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -407,6 +417,30 @@ export class DatabaseStorage implements IStorage {
 
   async deleteAdvertisement(id: number): Promise<void> {
     await db.delete(advertisements).where(eq(advertisements.id, id));
+  }
+
+  // Advertiser Applications
+  async getAdvertiserApplications(): Promise<AdvertiserApplication[]> {
+    return await db.select().from(advertiserApplications).orderBy(desc(advertiserApplications.createdAt));
+  }
+
+  async getAdvertiserApplication(id: number): Promise<AdvertiserApplication | undefined> {
+    const [app] = await db.select().from(advertiserApplications).where(eq(advertiserApplications.id, id));
+    return app;
+  }
+
+  async createAdvertiserApplication(app: InsertAdvertiserApplication): Promise<AdvertiserApplication> {
+    const [newApp] = await db.insert(advertiserApplications).values(app).returning();
+    return newApp;
+  }
+
+  async updateAdvertiserApplicationStatus(id: number, status: string): Promise<AdvertiserApplication> {
+    const [updated] = await db.update(advertiserApplications).set({ status }).where(eq(advertiserApplications.id, id)).returning();
+    return updated;
+  }
+
+  async deleteAdvertiserApplication(id: number): Promise<void> {
+    await db.delete(advertiserApplications).where(eq(advertiserApplications.id, id));
   }
 }
 
