@@ -99,6 +99,21 @@ export const jobs = pgTable("jobs", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const advertisements = pgTable("advertisements", {
+  id: serial("id").primaryKey(),
+  sponsorName: text("sponsor_name").notNull(), // Company/brand name
+  sponsorLogo: text("sponsor_logo"), // URL to sponsor logo image
+  message: text("message").notNull(), // Ad copy/promotional message
+  linkUrl: text("link_url"), // Click-through URL
+  routeIds: integer("route_ids").array(), // Array of route IDs this ad applies to (null = all routes)
+  placementType: text("placement_type").default("standard"), // 'standard', 'premium', 'exclusive'
+  pricePerMonth: integer("price_per_month"), // Price in ZAR cents
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const busRoutesRelations = relations(busRoutes, ({ many }) => ({
   notifications: many(notifications),
   subscriptions: many(subscriptions),
@@ -187,6 +202,7 @@ export const insertNotificationSchema = createInsertSchema(notifications).omit({
 export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({ id: true, createdAt: true });
 export const insertReviewSchema = createInsertSchema(reviews).omit({ id: true, createdAt: true });
 export const insertJobSchema = createInsertSchema(jobs).omit({ id: true, createdAt: true });
+export const insertAdvertisementSchema = createInsertSchema(advertisements).omit({ id: true, createdAt: true });
 
 // === EXPLICIT API CONTRACT TYPES ===
 
@@ -210,6 +226,9 @@ export type InsertReview = z.infer<typeof insertReviewSchema>;
 
 export type Job = typeof jobs.$inferSelect;
 export type InsertJob = z.infer<typeof insertJobSchema>;
+
+export type Advertisement = typeof advertisements.$inferSelect;
+export type InsertAdvertisement = z.infer<typeof insertAdvertisementSchema>;
 
 // Request types
 export type CreateBusRouteRequest = InsertBusRoute;
