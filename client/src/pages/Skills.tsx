@@ -20,7 +20,12 @@ import {
   ArrowRight,
   Compass,
   Timer,
-  Footprints
+  Footprints,
+  Search,
+  MousePointer,
+  MessageSquare,
+  Briefcase,
+  Hand
 } from "lucide-react";
 
 const tips = [
@@ -140,6 +145,81 @@ const infographicCourses = [
   }
 ];
 
+const appGuideFeatures = [
+  {
+    icon: Search,
+    title: "Find Your Route",
+    description: "Browse routes by province and municipality, or use the global search to find any route instantly.",
+    steps: [
+      "Go to 'Find My Route' in the menu",
+      "Select your province from the dropdown",
+      "Choose your municipality",
+      "Or use the search bar to find routes by name"
+    ],
+    link: "/routes"
+  },
+  {
+    icon: Bell,
+    title: "Subscribe for Alerts",
+    description: "Get notified about delays, cancellations, and service changes on routes you care about.",
+    steps: [
+      "Find the route you commute on regularly",
+      "Click the 'Subscribe' button on the route card",
+      "Check the 'Alerts' page for notifications",
+      "Manage subscriptions in 'My Subscriptions'"
+    ],
+    link: "/notifications"
+  },
+  {
+    icon: Hand,
+    title: "I'm Waiting Feature",
+    description: "Let drivers and other commuters know you're waiting at a stop. Helps drivers prioritize busy stops.",
+    steps: [
+      "Open any route details page",
+      "Click the 'I'm Waiting' button",
+      "Your count is added to the waiting total",
+      "Drivers can see how many people are waiting"
+    ],
+    link: "/routes"
+  },
+  {
+    icon: Star,
+    title: "Leave a Review",
+    description: "Share your experience and help other commuters make informed decisions.",
+    steps: [
+      "Go to the 'Reviews' page",
+      "Select the route you want to review",
+      "Rate your experience (1-5 stars)",
+      "Add optional comments about the service"
+    ],
+    link: "/reviews"
+  },
+  {
+    icon: Briefcase,
+    title: "Find Transport Jobs",
+    description: "Explore career opportunities in the South African transport industry.",
+    steps: [
+      "Navigate to the 'Jobs' page",
+      "Browse available positions",
+      "Click on a job for full details",
+      "Apply using the contact information provided"
+    ],
+    link: "/jobs"
+  },
+  {
+    icon: MessageSquare,
+    title: "Advertise With Us",
+    description: "Promote your business to thousands of daily commuters through route sponsorships.",
+    steps: [
+      "Visit the 'Advertise With Us' page",
+      "Fill out the application form",
+      "Select your target routes",
+      "Wait for admin approval to go live"
+    ],
+    link: "/advertise"
+  }
+];
+
 export default function SkillsPage() {
   return (
     <div className="min-h-screen bg-background">
@@ -154,6 +234,51 @@ export default function SkillsPage() {
             to make your daily commute smoother and more enjoyable.
           </p>
         </div>
+
+        <section className="mb-12">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="bg-secondary/20 p-2 rounded-lg">
+              <Smartphone className="h-6 w-6 text-secondary" />
+            </div>
+            <h2 className="font-display text-2xl font-bold text-foreground">How to Use MzansiMove</h2>
+          </div>
+          <p className="text-muted-foreground mb-6">
+            Get the most out of the app with our quick feature guides. Learn how to find routes, subscribe to alerts, and more.
+          </p>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {appGuideFeatures.map((feature, index) => (
+              <Card key={index} className="hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-primary/10 p-2 rounded-lg">
+                      <feature.icon className="h-5 w-5 text-primary" />
+                    </div>
+                    <CardTitle className="text-base">{feature.title}</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="text-sm text-muted-foreground">{feature.description}</p>
+                  <ol className="space-y-2">
+                    {feature.steps.map((step, stepIndex) => (
+                      <li key={stepIndex} className="flex items-start gap-2 text-sm">
+                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-secondary/20 text-secondary text-xs font-bold shrink-0">
+                          {stepIndex + 1}
+                        </span>
+                        <span className="text-foreground">{step}</span>
+                      </li>
+                    ))}
+                  </ol>
+                  <Button variant="outline" size="sm" className="w-full mt-2" asChild>
+                    <a href={feature.link}>
+                      Try It Now
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </a>
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
 
         <section className="mb-12">
           <h2 className="font-display text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
