@@ -359,9 +359,32 @@ function AdCard({
   const now = new Date();
   const startDate = new Date(ad.startDate);
   const endDate = new Date(ad.endDate);
-  const isActive = ad.isActive && startDate <= now && endDate > now;
-  const isPending = ad.isActive && startDate > now;
   const isExpired = endDate <= now;
+  
+  const approvalStatus = (ad as any).approvalStatus || "pending";
+  const approvalReason = (ad as any).approvalReason;
+  
+  const getStatusBadge = () => {
+    if (approvalStatus === "pending") {
+      return <Badge className="bg-yellow-500">Pending Approval</Badge>;
+    }
+    if (approvalStatus === "rejected") {
+      return <Badge className="bg-red-500">Rejected</Badge>;
+    }
+    if (approvalStatus === "approved") {
+      if (isExpired) {
+        return <Badge variant="outline">Expired</Badge>;
+      }
+      if (!ad.isActive) {
+        return <Badge variant="outline">Paused</Badge>;
+      }
+      if (startDate > now) {
+        return <Badge variant="secondary">Scheduled</Badge>;
+      }
+      return <Badge className="bg-green-500">Active</Badge>;
+    }
+    return null;
+  };
 
   const targetRoutes = ad.routeIds && ad.routeIds.length > 0
     ? routes.filter(r => ad.routeIds?.includes(r.id)).map(r => r.name).join(", ")
@@ -374,14 +397,19 @@ function AdCard({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2">
               <h3 className="font-semibold truncate">{ad.sponsorName}</h3>
-              {isActive && <Badge className="bg-green-500">Active</Badge>}
-              {isPending && <Badge variant="secondary">Pending</Badge>}
-              {isExpired && <Badge variant="outline">Expired</Badge>}
-              {!ad.isActive && !isExpired && <Badge variant="outline">Paused</Badge>}
+              {getStatusBadge()}
             </div>
             
             {ad.message && (
               <p className="text-sm text-muted-foreground mb-2 line-clamp-2">{ad.message}</p>
+            )}
+            
+            {approvalStatus === "rejected" && approvalReason && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-3 mb-2">
+                <p className="text-sm text-red-700 dark:text-red-400">
+                  <strong>Rejection reason:</strong> {approvalReason}
+                </p>
+              </div>
             )}
             
             <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">

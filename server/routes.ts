@@ -417,6 +417,40 @@ export async function registerRoutes(
     res.status(204).send();
   });
 
+  // Ad Approval Management (Admin only)
+  app.get("/api/advertisements/pending", isAdminVerified, async (req, res) => {
+    const pendingAds = await storage.getPendingAds();
+    res.json(pendingAds);
+  });
+
+  app.get("/api/advertisements/all", isAdminVerified, async (req, res) => {
+    const allAds = await storage.getAllAdsForAdmin();
+    res.json(allAds);
+  });
+
+  app.post("/api/advertisements/:id/approve", isAdminVerified, async (req, res) => {
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ message: "Invalid advertisement ID" });
+    }
+    const { reason } = req.body;
+    const ad = await storage.approveAdvertisement(id, reason);
+    res.json(ad);
+  });
+
+  app.post("/api/advertisements/:id/reject", isAdminVerified, async (req, res) => {
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ message: "Invalid advertisement ID" });
+    }
+    const { reason } = req.body;
+    if (!reason || reason.trim() === "") {
+      return res.status(400).json({ message: "A reason is required when rejecting an ad" });
+    }
+    const ad = await storage.rejectAdvertisement(id, reason);
+    res.json(ad);
+  });
+
   // Advertiser Applications
   app.get("/api/advertiser-applications", isAdminVerified, async (req, res) => {
     const applications = await storage.getAdvertiserApplications();

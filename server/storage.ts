@@ -382,6 +382,7 @@ export class DatabaseStorage implements IStorage {
       return await db.select().from(advertisements).where(
         and(
           eq(advertisements.isActive, true),
+          eq(advertisements.approvalStatus, "approved"),
           lte(advertisements.startDate, now),
           gt(advertisements.endDate, now)
         )
@@ -400,6 +401,7 @@ export class DatabaseStorage implements IStorage {
     const allActiveAds = await db.select().from(advertisements).where(
       and(
         eq(advertisements.isActive, true),
+        eq(advertisements.approvalStatus, "approved"), // Only show approved ads
         lte(advertisements.startDate, now),
         gt(advertisements.endDate, now)
       )
@@ -411,14 +413,37 @@ export class DatabaseStorage implements IStorage {
     );
   }
 
+  async getPendingAds(): Promise<Advertisement[]> {
+    return await db.select().from(advertisements)
+      .where(eq(advertisements.approvalStatus, "pending"))
+      .orderBy(desc(advertisements.createdAt));
+  }
+
+  async getAllAdsForAdmin(): Promise<Advertisement[]> {
+    return await db.select().from(advertisements).orderBy(desc(advertisements.createdAt));
+  }
+
+  async approveAdvertisement(id: number, reason?: string): Promise<Advertisement> {
+    const [updated] = await db.update(advertisements).set({ 
+      approvalStatus: "approved",
+      approvalReason: reason || null,
+      reviewedAt: new Date()
+    }).where(eq(advertisements.id, id)).returning();
+    return updated;
+  }
+
+  async rejectAdvertisement(id: number, reason: string): Promise<Advertisement> {
+    const [updated] = await db.update(advertisements).set({ 
+      approvalStatus: "rejected",
+      approvalReason: reason,
+      reviewedAt: new Date()
+    }).where(eq(advertisements.id, id)).returning();
+    return updated;
+  }
+
   async createAdvertisement(ad: InsertAdvertisement): Promise<Advertisement> {
     const [newAd] = await db.insert(advertisements).values(ad).returning();
     return newAd;
-  }
-
-  async getAdvertisement(id: number): Promise<Advertisement | undefined> {
-    const [ad] = await db.select().from(advertisements).where(eq(advertisements.id, id));
-    return ad;
   }
 
   async updateAdvertisement(id: number, updates: Partial<InsertAdvertisement>): Promise<Advertisement> {

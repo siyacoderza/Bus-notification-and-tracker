@@ -112,6 +112,9 @@ export const advertisements = pgTable("advertisements", {
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date").notNull(),
   isActive: boolean("is_active").default(true),
+  approvalStatus: text("approval_status").default("pending"), // 'pending', 'approved', 'rejected'
+  approvalReason: text("approval_reason"), // Admin's reason for rejection or notes
+  reviewedAt: timestamp("reviewed_at"), // When the ad was reviewed
   createdAt: timestamp("created_at").defaultNow(),
 });
 

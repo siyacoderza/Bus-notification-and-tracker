@@ -8,10 +8,187 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription }
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Megaphone, Building2, ExternalLink, Calendar, Loader2, Trash2, DollarSign, MapPin, CalendarX, FileText, Mail, Phone, Globe, Clock, CheckCircle2, XCircle, MessageCircle } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Megaphone, Building2, ExternalLink, Calendar, Loader2, Trash2, DollarSign, MapPin, CalendarX, FileText, Mail, Phone, Globe, Clock, CheckCircle2, XCircle, MessageCircle, AlertCircle } from "lucide-react";
 import { format, isPast, isFuture } from "date-fns";
 import { type Advertisement, type AdvertiserApplication } from "@shared/schema";
 import { Link } from "wouter";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+
+function AdApprovalCard({ ad }: { ad: Advertisement }) {
+  const { toast } = useToast();
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  
+  const approvalStatus = (ad as any).approvalStatus || "pending";
+
+  const approveMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", `/api/advertisements/${ad.id}/approve`, {});
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Ad approved successfully" });
+      queryClient.invalidateQueries({ queryKey: ["/api/advertisements/pending"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/advertisements/all"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/advertisements"] });
+    },
+    onError: () => {
+      toast({ title: "Failed to approve ad", variant: "destructive" });
+    }
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: async (reason: string) => {
+      const res = await apiRequest("POST", `/api/advertisements/${ad.id}/reject`, { reason });
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Ad rejected" });
+      setRejectDialogOpen(false);
+      setRejectReason("");
+      queryClient.invalidateQueries({ queryKey: ["/api/advertisements/pending"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/advertisements/all"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/advertisements"] });
+    },
+    onError: () => {
+      toast({ title: "Failed to reject ad", variant: "destructive" });
+    }
+  });
+
+  const handleReject = () => {
+    if (!rejectReason.trim()) {
+      toast({ title: "Please provide a reason for rejection", variant: "destructive" });
+      return;
+    }
+    rejectMutation.mutate(rejectReason);
+  };
+
+  const getStatusBadge = () => {
+    if (approvalStatus === "pending") return <Badge className="bg-yellow-500">Pending Approval</Badge>;
+    if (approvalStatus === "approved") return <Badge className="bg-green-500">Approved</Badge>;
+    if (approvalStatus === "rejected") return <Badge className="bg-red-500">Rejected</Badge>;
+    return null;
+  };
+
+  return (
+    <Card className="hover:shadow-lg transition-all duration-300" data-testid={`approval-card-${ad.id}`}>
+      <CardHeader className="pb-2">
+        <div className="flex flex-wrap justify-between items-start gap-2">
+          {getStatusBadge()}
+          <Badge variant="outline">{ad.placementType}</Badge>
+        </div>
+        <CardTitle className="text-lg font-display text-primary mt-2 flex items-center gap-2">
+          {ad.sponsorLogo && (
+            <img src={ad.sponsorLogo} alt={ad.sponsorName} className="h-8 w-8 object-contain rounded" />
+          )}
+          {ad.sponsorName}
+        </CardTitle>
+      </CardHeader>
+
+      <CardContent className="space-y-3">
+        <p className="text-sm text-muted-foreground leading-relaxed">{ad.message}</p>
+        
+        {ad.linkUrl && (
+          <a 
+            href={ad.linkUrl} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 text-sm text-primary hover:underline"
+          >
+            <ExternalLink className="h-3 w-3" />
+            {ad.linkUrl}
+          </a>
+        )}
+
+        <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <Calendar className="h-3 w-3" />
+            {format(new Date(ad.startDate), "dd MMM yyyy")} - {format(new Date(ad.endDate), "dd MMM yyyy")}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <MapPin className="h-3 w-3" />
+          {ad.routeIds && ad.routeIds.length > 0 
+            ? `${ad.routeIds.length} selected route${ad.routeIds.length > 1 ? 's' : ''}`
+            : 'All routes (network-wide)'
+          }
+        </div>
+
+        {approvalStatus === "rejected" && (ad as any).approvalReason && (
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-2">
+            <p className="text-xs text-red-700 dark:text-red-400">
+              <strong>Reason:</strong> {(ad as any).approvalReason}
+            </p>
+          </div>
+        )}
+
+        <div className="text-xs text-muted-foreground">
+          <Clock className="h-3 w-3 inline mr-1" />
+          Submitted {format(new Date(ad.createdAt!), "dd MMM yyyy")}
+        </div>
+      </CardContent>
+
+      {approvalStatus === "pending" && (
+        <CardFooter className="flex gap-2">
+          <Button 
+            size="sm" 
+            onClick={() => approveMutation.mutate()}
+            disabled={approveMutation.isPending}
+            data-testid={`button-approve-ad-${ad.id}`}
+          >
+            {approveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-1" />}
+            Approve
+          </Button>
+          <Button 
+            size="sm" 
+            variant="destructive"
+            onClick={() => setRejectDialogOpen(true)}
+            data-testid={`button-reject-ad-${ad.id}`}
+          >
+            <XCircle className="h-4 w-4 mr-1" />
+            Reject
+          </Button>
+        </CardFooter>
+      )}
+
+      <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject Advertisement</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Please provide a reason for rejecting this ad. This will be shown to the advertiser.
+            </p>
+            <Textarea
+              placeholder="Enter rejection reason..."
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              className="resize-none"
+              data-testid="input-reject-reason"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>Cancel</Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleReject}
+              disabled={rejectMutation.isPending}
+              data-testid="button-confirm-reject"
+            >
+              {rejectMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Reject Ad"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </Card>
+  );
+}
 
 function AdCard({ ad, isAdmin }: { ad: Advertisement; isAdmin: boolean }) {
   const deleteAd = useDeleteAdvertisement();
@@ -304,7 +481,19 @@ export default function AdvertisementsPage() {
   const { isAdmin } = useAdminMode();
   const { data: ads, isLoading } = useAdvertisements(!isAdmin);
   const { data: applications, isLoading: appsLoading } = useAdvertiserApplications();
-  const pendingCount = applications?.filter(a => a.status === "pending" || !a.status).length || 0;
+  
+  const { data: pendingAds = [], isLoading: pendingLoading } = useQuery<Advertisement[]>({
+    queryKey: ["/api/advertisements/pending"],
+    enabled: isAdmin,
+  });
+  
+  const { data: allAds = [], isLoading: allAdsLoading } = useQuery<Advertisement[]>({
+    queryKey: ["/api/advertisements/all"],
+    enabled: isAdmin,
+  });
+  
+  const pendingAppCount = applications?.filter(a => a.status === "pending" || !a.status).length || 0;
+  const pendingAdCount = pendingAds.length;
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -365,30 +554,61 @@ export default function AdvertisementsPage() {
         )}
 
         {isAdmin ? (
-          <Tabs defaultValue="ads" className="w-full">
+          <Tabs defaultValue="pending" className="w-full">
             <TabsList className="mb-6">
-              <TabsTrigger value="ads" data-testid="tab-ads">
-                Active Ads
+              <TabsTrigger value="pending" data-testid="tab-pending-ads" className="relative">
+                <AlertCircle className="h-4 w-4 mr-1" />
+                Pending Approval
+                {pendingAdCount > 0 && (
+                  <Badge variant="destructive" className="ml-2 h-5 px-1.5 text-xs">
+                    {pendingAdCount}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="all-ads" data-testid="tab-all-ads">
+                All Ads
               </TabsTrigger>
               <TabsTrigger value="applications" data-testid="tab-applications" className="relative">
                 Applications
-                {pendingCount > 0 && (
+                {pendingAppCount > 0 && (
                   <Badge variant="destructive" className="ml-2 h-5 px-1.5 text-xs">
-                    {pendingCount}
+                    {pendingAppCount}
                   </Badge>
                 )}
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="ads">
-              {isLoading ? (
+            <TabsContent value="pending">
+              {pendingLoading ? (
                 <div className="flex items-center justify-center h-64">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
-              ) : ads && ads.length > 0 ? (
+              ) : pendingAds.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {ads.map((ad) => (
-                    <AdCard key={ad.id} ad={ad} isAdmin={isAdmin} />
+                  {pendingAds.map((ad) => (
+                    <AdApprovalCard key={ad.id} ad={ad} />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16">
+                  <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
+                  <h2 className="text-xl font-bold mb-2">All Caught Up!</h2>
+                  <p className="text-muted-foreground">
+                    No advertisements pending approval.
+                  </p>
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="all-ads">
+              {allAdsLoading ? (
+                <div className="flex items-center justify-center h-64">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : allAds.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {allAds.map((ad) => (
+                    <AdApprovalCard key={ad.id} ad={ad} />
                   ))}
                 </div>
               ) : (
@@ -396,7 +616,7 @@ export default function AdvertisementsPage() {
                   <Megaphone className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                   <h2 className="text-xl font-bold mb-2">No Advertisements</h2>
                   <p className="text-muted-foreground">
-                    Create your first sponsored route advertisement to start generating revenue.
+                    Advertisements submitted by advertisers will appear here.
                   </p>
                 </div>
               )}
