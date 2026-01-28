@@ -15,7 +15,12 @@ import {
   Users,
   Lightbulb,
   BookOpen,
-  CheckCircle2
+  CheckCircle2,
+  BarChart3,
+  ArrowRight,
+  Compass,
+  Timer,
+  Footprints
 } from "lucide-react";
 
 const tips = [
@@ -75,6 +80,66 @@ const transitEtiquette = [
   { tip: "Keep food and drink consumption minimal", icon: Lightbulb }
 ];
 
+const infographicCourses = [
+  {
+    title: "Reading Bus Schedules 101",
+    icon: BarChart3,
+    duration: "5 min read",
+    difficulty: "Beginner",
+    color: "from-emerald-500 to-teal-600",
+    steps: [
+      "Find your route number at the top of the schedule",
+      "Locate your starting stop in the left column",
+      "Read across to find departure times",
+      "Check for weekday vs weekend differences",
+      "Note any special service indicators"
+    ]
+  },
+  {
+    title: "Mastering Route Transfers",
+    icon: Route,
+    duration: "7 min read",
+    difficulty: "Intermediate",
+    color: "from-blue-500 to-indigo-600",
+    steps: [
+      "Identify connection points between routes",
+      "Allow 10-15 minutes buffer for transfers",
+      "Know alternative routes in case of delays",
+      "Use the app to track both buses in real-time",
+      "Position yourself near the exit before your stop"
+    ]
+  },
+  {
+    title: "Peak Hour Survival Guide",
+    icon: Timer,
+    duration: "6 min read",
+    difficulty: "All Levels",
+    color: "from-orange-500 to-red-600",
+    steps: [
+      "Leave 15-20 minutes earlier than usual",
+      "Know which stops have the longest queues",
+      "Consider alternative routes with less traffic",
+      "Use the 'I'm Waiting' feature to gauge crowds",
+      "Have a backup plan ready"
+    ]
+  },
+  {
+    title: "First-Time Commuter Guide",
+    icon: Footprints,
+    duration: "10 min read",
+    difficulty: "Beginner",
+    color: "from-purple-500 to-pink-600",
+    steps: [
+      "Download MzansiMove and explore routes",
+      "Plan your journey the night before",
+      "Arrive at the stop 10 minutes early",
+      "Have exact fare or a loaded transport card",
+      "Subscribe to your regular routes for alerts",
+      "Don't hesitate to ask drivers for help"
+    ]
+  }
+];
+
 export default function SkillsPage() {
   return (
     <div className="min-h-screen bg-background">
@@ -107,6 +172,48 @@ export default function SkillsPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground">{tip.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        <section className="mb-12">
+          <h2 className="font-display text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
+            <Compass className="h-6 w-6 text-secondary" />
+            Infographic Courses
+          </h2>
+          <p className="text-muted-foreground mb-6">
+            Step-by-step visual guides to help you become a confident commuter. Each course breaks down essential skills into easy-to-follow steps.
+          </p>
+          <div className="grid md:grid-cols-2 gap-6">
+            {infographicCourses.map((course, index) => (
+              <Card key={index} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <div className={`bg-gradient-to-r ${course.color} p-4`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-white/20 p-2 rounded-lg">
+                        <course.icon className="h-6 w-6 text-white" />
+                      </div>
+                      <h3 className="font-display font-bold text-lg text-white">{course.title}</h3>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 mt-3">
+                    <Badge className="bg-white/20 text-white border-0 text-xs">{course.duration}</Badge>
+                    <Badge className="bg-white/20 text-white border-0 text-xs">{course.difficulty}</Badge>
+                  </div>
+                </div>
+                <CardContent className="pt-4">
+                  <ol className="space-y-3">
+                    {course.steps.map((step, stepIndex) => (
+                      <li key={stepIndex} className="flex items-start gap-3">
+                        <span className={`flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-r ${course.color} text-white text-xs font-bold shrink-0`}>
+                          {stepIndex + 1}
+                        </span>
+                        <span className="text-sm text-foreground">{step}</span>
+                      </li>
+                    ))}
+                  </ol>
                 </CardContent>
               </Card>
             ))}
