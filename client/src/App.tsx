@@ -18,12 +18,14 @@ import SkillsPage from "@/pages/Skills";
 import AdvertiserPortalPage from "@/pages/AdvertiserPortal";
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 import AuthPage from "@/pages/AuthPage";
 
 function Router() {
   return (
     <div className="flex flex-col min-h-screen">
+      <ScrollToTop />
       <Navbar />
       <main className="flex-grow">
         <Switch>

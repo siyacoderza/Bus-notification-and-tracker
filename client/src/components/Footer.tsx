@@ -25,7 +25,7 @@ export function Footer() {
             <h4 className="font-display font-bold text-lg mb-4 text-secondary">Quick Links</h4>
             <ul className="space-y-2 text-sm text-primary-foreground/80">
               <li>
-                <Link href="/" className="hover:text-secondary transition-colors">Find a Route</Link>
+                <Link href="/routes" className="hover:text-secondary transition-colors">Find a Route</Link>
               </li>
               <li>
                 <Link href="/notifications" className="hover:text-secondary transition-colors">Live Alerts</Link>
