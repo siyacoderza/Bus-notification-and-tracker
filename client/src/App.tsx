@@ -15,6 +15,7 @@ import AdvertisementsPage from "@/pages/Advertisements";
 import AboutPage from "@/pages/About";
 import AdvertisePage from "@/pages/Advertise";
 import SkillsPage from "@/pages/Skills";
+import AdvertiserPortalPage from "@/pages/AdvertiserPortal";
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
 
@@ -37,6 +38,7 @@ function Router() {
           <Route path="/about" component={AboutPage} />
           <Route path="/advertise" component={AdvertisePage} />
           <Route path="/skills" component={SkillsPage} />
+          <Route path="/advertiser-portal" component={AdvertiserPortalPage} />
           <Route component={NotFound} />
         </Switch>
       </main>

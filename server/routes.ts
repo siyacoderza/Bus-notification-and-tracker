@@ -751,4 +751,48 @@ async function seedDatabase() {
 
     console.log("Seeding complete: 9 provinces, " + municipalityData.length + " municipalities added.");
   }
+
+  // Seed sample advertiser if none exist
+  const existingAdvertisers = await storage.getAdvertisers();
+  if (existingAdvertisers.length === 0) {
+    console.log("Seeding sample advertiser...");
+    await storage.createAdvertiser({
+      companyName: "Demo Advertising Co",
+      contactName: "Jane Smith",
+      email: "demo@advertiser.com",
+      phone: "011-555-1234",
+      website: "https://demo-advertiser.co.za",
+      industry: "Retail",
+      pin: "1234"
+    });
+    console.log("Sample advertiser created: demo@advertiser.com / PIN: 1234");
+  }
+
+  // Seed route analytics if none exist
+  const existingAnalytics = await storage.getAllRouteAnalytics();
+  if (existingAnalytics.length === 0) {
+    const routes = await storage.getBusRoutes();
+    if (routes.length > 0) {
+      console.log("Seeding route analytics...");
+      
+      // Create analytics for last 7 days for each route
+      for (const route of routes) {
+        for (let i = 0; i < 7; i++) {
+          const date = new Date();
+          date.setDate(date.getDate() - i);
+          
+          await storage.createRouteAnalytics({
+            routeId: route.id,
+            date,
+            dailyPassengers: Math.floor(Math.random() * 500) + 200,
+            peakHourPassengers: Math.floor(Math.random() * 100) + 50,
+            averageWaitTime: Math.floor(Math.random() * 15) + 5,
+            impressions: Math.floor(Math.random() * 1000) + 500,
+            clicks: Math.floor(Math.random() * 50) + 10
+          });
+        }
+      }
+      console.log("Route analytics seeded for " + routes.length + " routes.");
+    }
+  }
 }
