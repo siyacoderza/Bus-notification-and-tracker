@@ -101,6 +101,7 @@ export const jobs = pgTable("jobs", {
 
 export const advertisements = pgTable("advertisements", {
   id: serial("id").primaryKey(),
+  advertiserId: integer("advertiser_id"), // Link to advertiser (null = admin-created)
   sponsorName: text("sponsor_name").notNull(), // Company/brand name
   sponsorLogo: text("sponsor_logo"), // URL to sponsor logo image
   message: text("message").notNull(), // Ad copy/promotional message
@@ -131,6 +132,30 @@ export const advertiserApplications = pgTable("advertiser_applications", {
   message: text("message"), // Additional notes
   status: text("status").default("pending"), // 'pending', 'approved', 'rejected', 'contacted'
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const advertisers = pgTable("advertisers", {
+  id: serial("id").primaryKey(),
+  companyName: text("company_name").notNull(),
+  contactName: text("contact_name").notNull(),
+  email: text("email").notNull().unique(),
+  phone: text("phone"),
+  website: text("website"),
+  industry: text("industry"),
+  pin: text("pin").notNull(), // 4-6 digit PIN for login
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const routeAnalytics = pgTable("route_analytics", {
+  id: serial("id").primaryKey(),
+  routeId: integer("route_id").notNull().references(() => busRoutes.id),
+  date: timestamp("date").notNull(),
+  dailyPassengers: integer("daily_passengers").default(0),
+  peakHourPassengers: integer("peak_hour_passengers").default(0),
+  averageWaitTime: integer("average_wait_time"), // in minutes
+  impressions: integer("impressions").default(0), // ad views
+  clicks: integer("clicks").default(0), // ad clicks
 });
 
 export const busRoutesRelations = relations(busRoutes, ({ many }) => ({
@@ -226,6 +251,8 @@ export const insertAdvertisementSchema = createInsertSchema(advertisements).omit
   endDate: z.coerce.date(),
 });
 export const insertAdvertiserApplicationSchema = createInsertSchema(advertiserApplications).omit({ id: true, createdAt: true, status: true });
+export const insertAdvertiserSchema = createInsertSchema(advertisers).omit({ id: true, createdAt: true });
+export const insertRouteAnalyticsSchema = createInsertSchema(routeAnalytics).omit({ id: true });
 
 // === EXPLICIT API CONTRACT TYPES ===
 
@@ -255,6 +282,12 @@ export type InsertAdvertisement = z.infer<typeof insertAdvertisementSchema>;
 
 export type AdvertiserApplication = typeof advertiserApplications.$inferSelect;
 export type InsertAdvertiserApplication = z.infer<typeof insertAdvertiserApplicationSchema>;
+
+export type Advertiser = typeof advertisers.$inferSelect;
+export type InsertAdvertiser = z.infer<typeof insertAdvertiserSchema>;
+
+export type RouteAnalytics = typeof routeAnalytics.$inferSelect;
+export type InsertRouteAnalytics = z.infer<typeof insertRouteAnalyticsSchema>;
 
 // Request types
 export type CreateBusRouteRequest = InsertBusRoute;
