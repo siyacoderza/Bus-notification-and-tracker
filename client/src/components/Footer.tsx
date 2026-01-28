@@ -40,7 +40,7 @@ export function Footer() {
                 <Link href="/about" className="hover:text-secondary transition-colors">About Us</Link>
               </li>
               <li>
-                <Link href="/jobs" className="hover:text-secondary transition-colors">Skills & Hiring</Link>
+                <Link href="/skills" className="hover:text-secondary transition-colors">Skills</Link>
               </li>
             </ul>
           </div>

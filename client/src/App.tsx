@@ -14,6 +14,7 @@ import JobsPage from "@/pages/Jobs";
 import AdvertisementsPage from "@/pages/Advertisements";
 import AboutPage from "@/pages/About";
 import AdvertisePage from "@/pages/Advertise";
+import SkillsPage from "@/pages/Skills";
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
 
@@ -35,6 +36,7 @@ function Router() {
           <Route path="/advertisements" component={AdvertisementsPage} />
           <Route path="/about" component={AboutPage} />
           <Route path="/advertise" component={AdvertisePage} />
+          <Route path="/skills" component={SkillsPage} />
           <Route component={NotFound} />
         </Switch>
       </main>
