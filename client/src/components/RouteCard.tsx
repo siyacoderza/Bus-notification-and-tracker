@@ -104,6 +104,17 @@ export function RouteCard({ route, showAdminControls = false }: RouteCardProps) 
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/routes"] });
+      toast({
+        title: "You're on the list!",
+        description: `Waiting for ${route.name}`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Couldn't mark waiting status",
+        description: error.message || "Please try again",
+        variant: "destructive",
+      });
     },
   });
 

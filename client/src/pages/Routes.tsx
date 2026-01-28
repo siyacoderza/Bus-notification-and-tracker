@@ -54,16 +54,24 @@ export default function RoutesPage() {
     selectedMunicipality ? "" : search
   );
 
-  const filteredRoutes = selectedMunicipality
-    ? routes?.filter(r => r.municipalityId === selectedMunicipality.id)
-    : routes?.filter(r => 
-        search ? 
-          r.name.toLowerCase().includes(search.toLowerCase()) ||
-          r.startLocation.toLowerCase().includes(search.toLowerCase()) ||
-          r.endLocation.toLowerCase().includes(search.toLowerCase()) ||
-          r.operatingCompany.toLowerCase().includes(search.toLowerCase())
-        : true
-      );
+  const filteredRoutes = routes?.filter(r => {
+    // If municipality is selected, show only routes for that municipality
+    if (selectedMunicipality) {
+      return r.municipalityId === selectedMunicipality.id;
+    }
+    
+    // If there's a search term, search across all routes
+    if (search) {
+      const searchLower = search.toLowerCase();
+      return r.name.toLowerCase().includes(searchLower) ||
+        r.startLocation.toLowerCase().includes(searchLower) ||
+        r.endLocation.toLowerCase().includes(searchLower) ||
+        r.operatingCompany.toLowerCase().includes(searchLower);
+    }
+    
+    // Default: show all routes when on home/province selection
+    return true;
+  });
 
   const handleBack = () => {
     if (selectedMunicipality) {
@@ -123,10 +131,51 @@ export default function RoutesPage() {
           {isAdmin && selectedMunicipality && <CreateRouteDialog />}
         </div>
 
-        {/* Step 1: Select Province */}
-        {!selectedProvince && (
+        {/* Global Search Bar */}
+        <div className="mb-6">
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search all routes by name, location, or company..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10"
+              data-testid="input-search-routes"
+            />
+          </div>
+        </div>
+
+        {/* Show search results when there's a search term */}
+        {search && (
           <>
-            <p className="text-lg text-muted-foreground mb-6">Select your province to find bus routes in your area.</p>
+            <p className="text-lg text-muted-foreground mb-4">
+              {filteredRoutes?.length || 0} route{filteredRoutes?.length !== 1 ? 's' : ''} found for "{search}"
+            </p>
+            
+            {loadingRoutes ? (
+              <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : filteredRoutes && filteredRoutes.length > 0 ? (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {filteredRoutes.map((route) => (
+                  <RouteCard key={route.id} route={route} showAdminControls={isAdmin} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16 text-muted-foreground">
+                <Search className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                <p className="text-lg">No routes found matching "{search}"</p>
+                <p className="text-sm">Try a different search term</p>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Step 1: Select Province (only when not searching) */}
+        {!selectedProvince && !search && (
+          <>
+            <p className="text-lg text-muted-foreground mb-6">Select your province to find bus routes in your area, or search above.</p>
             
             {loadingProvinces ? (
               <div className="flex items-center justify-center h-64">
@@ -157,8 +206,8 @@ export default function RoutesPage() {
           </>
         )}
 
-        {/* Step 2: Select Municipality */}
-        {selectedProvince && !selectedMunicipality && (
+        {/* Step 2: Select Municipality (only when not searching) */}
+        {selectedProvince && !selectedMunicipality && !search && (
           <>
             <p className="text-lg text-muted-foreground mb-6">
               Select your municipality in {selectedProvince.name}.
@@ -198,8 +247,8 @@ export default function RoutesPage() {
           </>
         )}
 
-        {/* Step 3: View Routes */}
-        {selectedMunicipality && (
+        {/* Step 3: View Routes (only when not using global search) */}
+        {selectedMunicipality && !search && (
           <>
             <div className="relative mb-8">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5" />
