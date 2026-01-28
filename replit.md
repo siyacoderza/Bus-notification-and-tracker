@@ -42,10 +42,13 @@ Preferred communication style: Simple, everyday language.
 - **Subscriptions**: User-route relationships for personalized alert delivery
 - **Reviews**: User reviews with ratings for bus routes
 - **Jobs**: Transport job postings (title, description, location, salary, requirements, company, contactInfo)
+- **Advertisements**: Sponsored ads tied to routes (sponsorName, message, routeIds, startDate, endDate, placementType)
+- **Advertisers**: Company accounts with email + PIN login for self-service ad management
+- **Route Analytics**: Daily traffic data per route (dailyPassengers, peakHourPassengers, impressions, clicks)
 - **Users/Sessions**: Authentication tables managed by Replit Auth integration
 
 ### Role-Based Access (PIN System)
-The app uses a dual PIN system for role-based access without requiring user accounts:
+The app uses a triple-role PIN system for role-based access without requiring user accounts:
 
 1. **Driver Mode** (OPERATOR_PIN environment variable)
    - Bus drivers can mark their availability on routes
@@ -53,10 +56,17 @@ The app uses a dual PIN system for role-based access without requiring user acco
    - Endpoints: `/api/verify-driver-pin`, `/api/driver-status`, `/api/exit-driver-mode`
 
 2. **Admin Mode** (ADMIN_PIN environment variable)
-   - App owner can manage routes, alerts, and job postings
+   - App owner can manage routes, alerts, job postings, and advertisers
    - Access via "Admin" button in navigation
    - Endpoints: `/api/verify-admin-pin`, `/api/admin-status`, `/api/exit-admin-mode`
    - Protected endpoints use `isAdminVerified` middleware
+
+3. **Advertiser Mode** (email + PIN per advertiser)
+   - Advertisers can manage their own ads and view route analytics
+   - Access via "Advertiser Portal" in hamburger menu (/advertiser-portal)
+   - Endpoints: `/api/verify-advertiser-pin`, `/api/advertiser-status`, `/api/exit-advertiser-mode`
+   - Protected endpoints use `isAdvertiserVerified` middleware
+   - Demo advertiser: demo@advertiser.com / PIN: 1234
 
 ### API Structure
 Routes are defined with full type contracts in `shared/routes.ts`:
