@@ -53,7 +53,7 @@ export function Navbar() {
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" data-testid="button-menu">
-                  <Menu className="h-6 w-6" />
+                  <Menu className="h-7 w-7" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-72">
@@ -122,8 +122,8 @@ export function Navbar() {
           </div>
 
           <Link href="/">
-            <div className="flex items-center gap-2 font-display text-xl font-bold text-primary cursor-pointer shrink-0">
-              <Bus className="h-6 w-6 text-secondary" />
+            <div className="flex items-center gap-2 font-display text-2xl font-bold text-primary cursor-pointer shrink-0">
+              <Bus className="h-7 w-7 text-secondary" />
               <span className="hidden sm:inline">MzansiMove</span>
             </div>
           </Link>
@@ -136,14 +136,14 @@ export function Navbar() {
               return (
                 <Link key={link.href} href={link.href}>
                   <button 
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-base font-medium transition-colors ${
                       isActive 
                         ? 'bg-primary/10 text-primary' 
                         : 'text-muted-foreground hover:text-primary hover:bg-muted'
                     }`}
                     data-testid={`nav-${link.label.toLowerCase().replace(/\s+/g, '-')}`}
                   >
-                    <Icon className="h-4 w-4" />
+                    <Icon className="h-5 w-5" />
                     <span>{link.label}</span>
                   </button>
                 </Link>
@@ -156,7 +156,7 @@ export function Navbar() {
             <DriverPinDialog />
             <AdminPinDialog />
             <Button onClick={handleShare} variant="ghost" size="icon" data-testid="button-share-global">
-              <Share2 className="h-5 w-5" />
+              <Share2 className="h-6 w-6" />
             </Button>
           </div>
         </div>
