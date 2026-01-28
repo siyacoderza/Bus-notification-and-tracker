@@ -22,6 +22,14 @@ const isAdminVerified = (req: any, res: Response, next: NextFunction) => {
   }
 };
 
+const isAdvertiserVerified = (req: any, res: Response, next: NextFunction) => {
+  if (req.session?.advertiserId) {
+    next();
+  } else {
+    res.status(403).json({ message: "Advertiser access required. Please log in with your email and PIN." });
+  }
+};
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
@@ -460,6 +468,145 @@ export async function registerRoutes(
     }
     await storage.deleteAdvertiserApplication(id);
     res.status(204).send();
+  });
+
+  // === Advertiser Portal ===
+  
+  // Advertiser login with email + PIN
+  app.post("/api/verify-advertiser-pin", async (req: any, res) => {
+    const { email, pin } = req.body;
+    if (!email || !pin) {
+      return res.status(400).json({ message: "Email and PIN are required" });
+    }
+    const advertiser = await storage.getAdvertiserByEmail(email);
+    if (!advertiser || advertiser.pin !== pin) {
+      return res.status(401).json({ message: "Invalid email or PIN" });
+    }
+    if (!advertiser.isActive) {
+      return res.status(403).json({ message: "Your account has been deactivated. Please contact support." });
+    }
+    req.session.advertiserId = advertiser.id;
+    req.session.advertiserName = advertiser.companyName;
+    res.json({ success: true, companyName: advertiser.companyName });
+  });
+
+  app.get("/api/advertiser-status", async (req: any, res) => {
+    if (req.session?.advertiserId) {
+      const advertiser = await storage.getAdvertiser(req.session.advertiserId);
+      res.json({ 
+        isAdvertiser: true, 
+        advertiserId: req.session.advertiserId,
+        companyName: advertiser?.companyName || req.session.advertiserName
+      });
+    } else {
+      res.json({ isAdvertiser: false });
+    }
+  });
+
+  app.post("/api/exit-advertiser-mode", async (req: any, res) => {
+    req.session.advertiserId = null;
+    req.session.advertiserName = null;
+    res.json({ success: true });
+  });
+
+  // Admin manages advertisers
+  app.get("/api/advertisers", isAdminVerified, async (req, res) => {
+    const allAdvertisers = await storage.getAdvertisers();
+    res.json(allAdvertisers);
+  });
+
+  app.post("/api/advertisers", isAdminVerified, async (req, res) => {
+    try {
+      const { companyName, contactName, email, phone, website, industry, pin } = req.body;
+      if (!companyName || !contactName || !email || !pin) {
+        return res.status(400).json({ message: "Company name, contact name, email, and PIN are required" });
+      }
+      const existing = await storage.getAdvertiserByEmail(email);
+      if (existing) {
+        return res.status(400).json({ message: "An advertiser with this email already exists" });
+      }
+      const advertiser = await storage.createAdvertiser({ companyName, contactName, email, phone, website, industry, pin });
+      res.status(201).json(advertiser);
+    } catch (err) {
+      res.status(500).json({ message: "Error creating advertiser" });
+    }
+  });
+
+  app.patch("/api/advertisers/:id", isAdminVerified, async (req, res) => {
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ message: "Invalid advertiser ID" });
+    }
+    const updates = req.body;
+    const advertiser = await storage.updateAdvertiser(id, updates);
+    res.json(advertiser);
+  });
+
+  app.delete("/api/advertisers/:id", isAdminVerified, async (req, res) => {
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ message: "Invalid advertiser ID" });
+    }
+    await storage.deleteAdvertiser(id);
+    res.status(204).send();
+  });
+
+  // Advertiser's own ads (protected by advertiser auth)
+  app.get("/api/advertiser/my-ads", isAdvertiserVerified, async (req: any, res) => {
+    const ads = await storage.getAdvertiserAds(req.session.advertiserId);
+    res.json(ads);
+  });
+
+  app.post("/api/advertiser/my-ads", isAdvertiserVerified, async (req: any, res) => {
+    try {
+      const advertiser = await storage.getAdvertiser(req.session.advertiserId);
+      if (!advertiser) {
+        return res.status(404).json({ message: "Advertiser not found" });
+      }
+      const input = insertAdvertisementSchema.parse({
+        ...req.body,
+        advertiserId: req.session.advertiserId,
+        sponsorName: advertiser.companyName
+      });
+      const ad = await storage.createAdvertisement(input);
+      res.status(201).json(ad);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      res.status(500).json({ message: "Error creating advertisement" });
+    }
+  });
+
+  app.patch("/api/advertiser/my-ads/:id", isAdvertiserVerified, async (req: any, res) => {
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ message: "Invalid advertisement ID" });
+    }
+    // Verify the ad belongs to this advertiser
+    const ad = await storage.getAdvertisement(id);
+    if (!ad || ad.advertiserId !== req.session.advertiserId) {
+      return res.status(403).json({ message: "You can only edit your own advertisements" });
+    }
+    const updates = req.body;
+    delete updates.advertiserId; // Don't allow changing ownership
+    const updatedAd = await storage.updateAdvertisement(id, updates);
+    res.json(updatedAd);
+  });
+
+  // Route Analytics (public for advertisers to see traffic data)
+  app.get("/api/route-analytics", async (req, res) => {
+    const analytics = await storage.getLatestRouteAnalytics();
+    res.json(analytics);
+  });
+
+  app.get("/api/route-analytics/:routeId", async (req, res) => {
+    const routeId = Number(req.params.routeId);
+    if (isNaN(routeId)) {
+      return res.status(400).json({ message: "Invalid route ID" });
+    }
+    const analytics = await storage.getRouteAnalytics(routeId);
+    res.json(analytics);
   });
 
   // Seed Data

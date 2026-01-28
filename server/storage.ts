@@ -12,6 +12,8 @@ import {
   jobs,
   advertisements,
   advertiserApplications,
+  advertisers,
+  routeAnalytics,
   type BusRoute,
   type InsertBusRoute,
   type Notification,
@@ -35,6 +37,10 @@ import {
   type InsertAdvertisement,
   type AdvertiserApplication,
   type InsertAdvertiserApplication,
+  type Advertiser,
+  type InsertAdvertiser,
+  type RouteAnalytics,
+  type InsertRouteAnalytics,
 } from "@shared/schema";
 import { eq, desc, and, or, gt, lte, isNull } from "drizzle-orm";
 
@@ -410,6 +416,11 @@ export class DatabaseStorage implements IStorage {
     return newAd;
   }
 
+  async getAdvertisement(id: number): Promise<Advertisement | undefined> {
+    const [ad] = await db.select().from(advertisements).where(eq(advertisements.id, id));
+    return ad;
+  }
+
   async updateAdvertisement(id: number, updates: Partial<InsertAdvertisement>): Promise<Advertisement> {
     const [updated] = await db.update(advertisements).set(updates).where(eq(advertisements.id, id)).returning();
     return updated;
@@ -441,6 +452,70 @@ export class DatabaseStorage implements IStorage {
 
   async deleteAdvertiserApplication(id: number): Promise<void> {
     await db.delete(advertiserApplications).where(eq(advertiserApplications.id, id));
+  }
+
+  // Advertisers
+  async getAdvertisers(): Promise<Advertiser[]> {
+    return await db.select().from(advertisers).orderBy(desc(advertisers.createdAt));
+  }
+
+  async getAdvertiser(id: number): Promise<Advertiser | undefined> {
+    const [advertiser] = await db.select().from(advertisers).where(eq(advertisers.id, id));
+    return advertiser;
+  }
+
+  async getAdvertiserByEmail(email: string): Promise<Advertiser | undefined> {
+    const [advertiser] = await db.select().from(advertisers).where(eq(advertisers.email, email));
+    return advertiser;
+  }
+
+  async createAdvertiser(advertiser: InsertAdvertiser): Promise<Advertiser> {
+    const [newAdvertiser] = await db.insert(advertisers).values(advertiser).returning();
+    return newAdvertiser;
+  }
+
+  async updateAdvertiser(id: number, updates: Partial<InsertAdvertiser>): Promise<Advertiser> {
+    const [updated] = await db.update(advertisers).set(updates).where(eq(advertisers.id, id)).returning();
+    return updated;
+  }
+
+  async deleteAdvertiser(id: number): Promise<void> {
+    await db.delete(advertisers).where(eq(advertisers.id, id));
+  }
+
+  async getAdvertiserAds(advertiserId: number): Promise<Advertisement[]> {
+    return await db.select().from(advertisements).where(eq(advertisements.advertiserId, advertiserId)).orderBy(desc(advertisements.createdAt));
+  }
+
+  // Route Analytics
+  async getRouteAnalytics(routeId: number): Promise<RouteAnalytics[]> {
+    return await db.select().from(routeAnalytics).where(eq(routeAnalytics.routeId, routeId)).orderBy(desc(routeAnalytics.date));
+  }
+
+  async getAllRouteAnalytics(): Promise<RouteAnalytics[]> {
+    return await db.select().from(routeAnalytics).orderBy(desc(routeAnalytics.date));
+  }
+
+  async createRouteAnalytics(analytics: InsertRouteAnalytics): Promise<RouteAnalytics> {
+    const [newAnalytics] = await db.insert(routeAnalytics).values(analytics).returning();
+    return newAnalytics;
+  }
+
+  async getLatestRouteAnalytics(): Promise<(RouteAnalytics & { routeName: string })[]> {
+    const routes = await this.getBusRoutes();
+    const allAnalytics = await this.getAllRouteAnalytics();
+    
+    const latestByRoute = new Map<number, RouteAnalytics>();
+    for (const a of allAnalytics) {
+      if (!latestByRoute.has(a.routeId)) {
+        latestByRoute.set(a.routeId, a);
+      }
+    }
+    
+    return Array.from(latestByRoute.values()).map(a => ({
+      ...a,
+      routeName: routes.find(r => r.id === a.routeId)?.name || 'Unknown Route'
+    }));
   }
 }
 
