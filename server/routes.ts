@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
-import { insertReviewSchema, insertJobSchema, insertJobApplicationSchema, insertAdvertisementSchema, insertAdvertiserApplicationSchema } from "@shared/schema";
+import { insertReviewSchema, insertJobSchema, insertJobApplicationSchema, insertAdvertisementSchema, insertAdvertiserApplicationSchema, insertMarketplaceVendorSchema, insertMarketplaceProductSchema } from "@shared/schema";
 
 const isDriverVerified = (req: any, res: Response, next: NextFunction) => {
   if (req.session?.isDriver) {
@@ -711,6 +711,183 @@ export async function registerRoutes(
     }
     const analytics = await storage.getRouteAnalytics(routeId);
     res.json(analytics);
+  });
+
+  // === Marketplace API ===
+  
+  // Public - Get approved vendors
+  app.get("/api/marketplace/vendors", async (req, res) => {
+    const approvedOnly = req.query.approved !== "false";
+    const vendors = await storage.getMarketplaceVendors(approvedOnly);
+    res.json(vendors);
+  });
+
+  // Public - Get products (from approved vendors only for public)
+  app.get("/api/marketplace/products", async (req, res) => {
+    const vendorId = req.query.vendorId ? Number(req.query.vendorId) : undefined;
+    const category = req.query.category as string | undefined;
+    const products = await storage.getMarketplaceProducts(vendorId, category);
+    res.json(products);
+  });
+
+  app.get("/api/marketplace/products/:id", async (req, res) => {
+    const id = Number(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ message: "Invalid product ID" });
+    }
+    const product = await storage.getMarketplaceProduct(id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    res.json(product);
+  });
+
+  // Vendor registration (public)
+  app.post("/api/marketplace/vendors/register", async (req, res) => {
+    try {
+      const input = insertMarketplaceVendorSchema.parse(req.body);
+      // Check if email already exists
+      const existing = await storage.getMarketplaceVendorByEmail(input.email);
+      if (existing) {
+        return res.status(400).json({ message: "A vendor with this email already exists" });
+      }
+      const vendor = await storage.createMarketplaceVendor(input);
+      res.status(201).json(vendor);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      throw err;
+    }
+  });
+
+  // Vendor login verification
+  app.post("/api/marketplace/vendors/verify", async (req, res) => {
+    const { email, pin } = req.body;
+    if (!email || !pin) {
+      return res.status(400).json({ message: "Email and PIN required" });
+    }
+    const vendor = await storage.getMarketplaceVendorByEmail(email);
+    if (!vendor || vendor.pin !== pin) {
+      return res.status(401).json({ message: "Invalid email or PIN" });
+    }
+    if (!vendor.isActive) {
+      return res.status(403).json({ message: "Vendor account is inactive" });
+    }
+    if (!vendor.isApproved) {
+      return res.status(403).json({ message: "Vendor account pending approval" });
+    }
+    (req.session as any).vendorId = vendor.id;
+    res.json({ success: true, vendor });
+  });
+
+  app.get("/api/marketplace/vendors/status", (req, res) => {
+    const vendorId = (req.session as any).vendorId;
+    res.json({ isVendor: !!vendorId, vendorId });
+  });
+
+  app.post("/api/marketplace/vendors/logout", (req, res) => {
+    delete (req.session as any).vendorId;
+    res.json({ success: true });
+  });
+
+  // Vendor-only routes (manage own products)
+  const isVendorVerified = (req: any, res: Response, next: NextFunction) => {
+    if (req.session?.vendorId) {
+      next();
+    } else {
+      res.status(401).json({ message: "Vendor authentication required" });
+    }
+  };
+
+  app.get("/api/marketplace/vendors/me", isVendorVerified, async (req, res) => {
+    const vendorId = (req.session as any).vendorId;
+    const vendor = await storage.getMarketplaceVendor(vendorId);
+    if (!vendor) {
+      return res.status(404).json({ message: "Vendor not found" });
+    }
+    res.json(vendor);
+  });
+
+  app.get("/api/marketplace/vendors/me/products", isVendorVerified, async (req, res) => {
+    const vendorId = (req.session as any).vendorId;
+    const products = await storage.getMarketplaceProducts(vendorId);
+    res.json(products);
+  });
+
+  app.post("/api/marketplace/products", isVendorVerified, async (req, res) => {
+    try {
+      const vendorId = (req.session as any).vendorId;
+      const input = insertMarketplaceProductSchema.parse({ ...req.body, vendorId });
+      const product = await storage.createMarketplaceProduct(input);
+      res.status(201).json(product);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      throw err;
+    }
+  });
+
+  app.put("/api/marketplace/products/:id", isVendorVerified, async (req, res) => {
+    try {
+      const id = Number(req.params.id);
+      const vendorId = (req.session as any).vendorId;
+      
+      // Verify ownership
+      const product = await storage.getMarketplaceProduct(id);
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      if (product.vendorId !== vendorId) {
+        return res.status(403).json({ message: "You can only edit your own products" });
+      }
+      
+      const updates = insertMarketplaceProductSchema.partial().parse(req.body);
+      const updated = await storage.updateMarketplaceProduct(id, updates);
+      res.json(updated);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      throw err;
+    }
+  });
+
+  app.delete("/api/marketplace/products/:id", isVendorVerified, async (req, res) => {
+    const id = Number(req.params.id);
+    const vendorId = (req.session as any).vendorId;
+    
+    // Verify ownership
+    const product = await storage.getMarketplaceProduct(id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    if (product.vendorId !== vendorId) {
+      return res.status(403).json({ message: "You can only delete your own products" });
+    }
+    
+    await storage.deleteMarketplaceProduct(id);
+    res.status(204).send();
+  });
+
+  // Admin-only vendor management
+  app.get("/api/marketplace/admin/vendors", isAdminVerified, async (req, res) => {
+    const vendors = await storage.getMarketplaceVendors(false);
+    res.json(vendors);
+  });
+
+  app.put("/api/marketplace/admin/vendors/:id/approve", isAdminVerified, async (req, res) => {
+    const id = Number(req.params.id);
+    const { approved } = req.body;
+    const vendor = await storage.approveMarketplaceVendor(id, approved);
+    res.json(vendor);
+  });
+
+  app.delete("/api/marketplace/admin/vendors/:id", isAdminVerified, async (req, res) => {
+    const id = Number(req.params.id);
+    await storage.deleteMarketplaceVendor(id);
+    res.status(204).send();
   });
 
   // Seed Data
