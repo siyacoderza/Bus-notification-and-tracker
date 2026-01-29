@@ -38,9 +38,6 @@ export function Navbar() {
     { href: "/jobs", label: "Jobs", icon: Briefcase },
     { href: "/skills", label: "Skills", icon: BookOpen },
     { href: "/advertisements", label: "Sponsors", icon: Megaphone },
-  ];
-  
-  const secondaryLinks = [
     { href: "/advertiser-portal", label: "Advertiser Portal", icon: Building2 },
   ];
 
@@ -91,27 +88,6 @@ export function Navbar() {
                     <Share2 className="h-5 w-5" />
                     <span>Share App</span>
                   </button>
-                  <div className="h-px bg-border my-4" />
-                  <p className="px-4 text-xs text-muted-foreground uppercase tracking-wide font-semibold">For Advertisers</p>
-                  {secondaryLinks.map((link) => {
-                    const Icon = link.icon;
-                    const isActive = location === link.href;
-                    return (
-                      <Link key={link.href} href={link.href}>
-                        <button 
-                          onClick={() => setOpen(false)}
-                          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors ${
-                            isActive 
-                              ? 'bg-primary/10 text-primary' 
-                              : 'text-foreground hover:text-primary hover:bg-muted'
-                          }`}
-                        >
-                          <Icon className="h-5 w-5" />
-                          <span>{link.label}</span>
-                        </button>
-                      </Link>
-                    );
-                  })}
                   <div className="mt-2 flex flex-col gap-2" onClick={() => setOpen(false)}>
                     <DriverPinDialog />
                     <AdminPinDialog />
