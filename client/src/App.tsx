@@ -16,6 +16,7 @@ import AboutPage from "@/pages/About";
 import AdvertisePage from "@/pages/Advertise";
 import SkillsPage from "@/pages/Skills";
 import AdvertiserPortalPage from "@/pages/AdvertiserPortal";
+import MarketplacePage from "@/pages/Marketplace";
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
 import { ScrollToTop } from "@/components/ScrollToTop";
@@ -41,6 +42,7 @@ function Router() {
           <Route path="/advertise" component={AdvertisePage} />
           <Route path="/skills" component={SkillsPage} />
           <Route path="/advertiser-portal" component={AdvertiserPortalPage} />
+          <Route path="/marketplace" component={MarketplacePage} />
           <Route component={NotFound} />
         </Switch>
       </main>
