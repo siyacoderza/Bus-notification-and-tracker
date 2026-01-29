@@ -10,6 +10,7 @@ import { useRoutes } from "@/hooks/use-routes";
 import { RouteCard } from "@/components/RouteCard";
 import { DriverPinDialog } from "@/components/DriverPinDialog";
 import { AdminPinDialog } from "@/components/AdminPinDialog";
+import heroImage from "@/assets/images/hero-transit.png";
 
 export default function Home() {
   const { user } = useAuth();
@@ -30,13 +31,13 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden bg-primary text-primary-foreground pt-12 pb-24 px-4 sm:px-6 lg:px-8">
-        <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-          {/* Abstract Pattern */}
-          <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full bg-white blur-3xl" />
-          <div className="absolute bottom-[-20%] left-[-10%] w-[400px] h-[400px] rounded-full bg-secondary blur-3xl" />
-        </div>
+      {/* Hero Section with Image */}
+      <div className="relative overflow-hidden text-white pt-12 pb-24 px-4 sm:px-6 lg:px-8">
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${heroImage})` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/80" />
 
         <div className="max-w-7xl mx-auto relative z-10">
           <nav className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-16">
@@ -73,7 +74,7 @@ export default function Home() {
                 />
                 <Button 
                   type="submit"
-                  className="absolute right-2 top-2 h-12 px-6 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg"
+                  className="absolute right-2 top-2 h-12 px-6 rounded-xl bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-lg"
                   data-testid="button-search-submit"
                 >
                   Search
