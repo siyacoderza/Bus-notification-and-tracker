@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
-import { insertReviewSchema, insertJobSchema, insertAdvertisementSchema, insertAdvertiserApplicationSchema } from "@shared/schema";
+import { insertReviewSchema, insertJobSchema, insertJobApplicationSchema, insertAdvertisementSchema, insertAdvertiserApplicationSchema } from "@shared/schema";
 
 const isDriverVerified = (req: any, res: Response, next: NextFunction) => {
   if (req.session?.isDriver) {
@@ -336,6 +336,64 @@ export async function registerRoutes(
 
   app.delete("/api/jobs/:id", isAdminVerified, async (req, res) => {
     await storage.deleteJob(Number(req.params.id));
+    res.status(204).send();
+  });
+
+  // === Job Applications API ===
+  app.get("/api/job-applications", async (req, res) => {
+    const jobId = req.query.jobId ? Number(req.query.jobId) : undefined;
+    const applications = await storage.getJobApplications(jobId);
+    res.json(applications);
+  });
+
+  app.get("/api/job-applications/by-email/:email", async (req, res) => {
+    const email = req.params.email;
+    const applications = await storage.getJobApplicationsByEmail(email);
+    res.json(applications);
+  });
+
+  app.get("/api/job-applications/:id", async (req, res) => {
+    const app = await storage.getJobApplication(Number(req.params.id));
+    if (!app) {
+      return res.status(404).json({ message: "Application not found" });
+    }
+    res.json(app);
+  });
+
+  app.post("/api/job-applications", async (req, res) => {
+    try {
+      const input = insertJobApplicationSchema.parse(req.body);
+      const application = await storage.createJobApplication(input);
+      res.status(201).json(application);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      throw err;
+    }
+  });
+
+  app.put("/api/job-applications/:id", async (req, res) => {
+    try {
+      const id = Number(req.params.id);
+      const app = await storage.getJobApplication(id);
+      if (!app) {
+        return res.status(404).json({ message: "Application not found" });
+      }
+      const updated = await storage.updateJobApplication(id, req.body);
+      res.json(updated);
+    } catch (err) {
+      res.status(400).json({ message: "Invalid input" });
+    }
+  });
+
+  app.delete("/api/job-applications/:id", async (req, res) => {
+    const id = Number(req.params.id);
+    const app = await storage.getJobApplication(id);
+    if (!app) {
+      return res.status(404).json({ message: "Application not found" });
+    }
+    await storage.deleteJobApplication(id);
     res.status(204).send();
   });
 

@@ -161,6 +161,21 @@ export const routeAnalytics = pgTable("route_analytics", {
   clicks: integer("clicks").default(0), // ad clicks
 });
 
+export const jobApplications = pgTable("job_applications", {
+  id: serial("id").primaryKey(),
+  jobId: integer("job_id").notNull().references(() => jobs.id),
+  fullName: text("full_name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  coverLetter: text("cover_letter"),
+  resumeUrl: text("resume_url"), // URL to uploaded resume
+  linkedinUrl: text("linkedin_url"),
+  experience: text("experience"), // Years of experience
+  status: text("status").default("pending"), // 'pending', 'reviewed', 'shortlisted', 'rejected', 'hired'
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const busRoutesRelations = relations(busRoutes, ({ many }) => ({
   notifications: many(notifications),
   subscriptions: many(subscriptions),
@@ -256,6 +271,7 @@ export const insertAdvertisementSchema = createInsertSchema(advertisements).omit
 export const insertAdvertiserApplicationSchema = createInsertSchema(advertiserApplications).omit({ id: true, createdAt: true, status: true });
 export const insertAdvertiserSchema = createInsertSchema(advertisers).omit({ id: true, createdAt: true });
 export const insertRouteAnalyticsSchema = createInsertSchema(routeAnalytics).omit({ id: true });
+export const insertJobApplicationSchema = createInsertSchema(jobApplications).omit({ id: true, createdAt: true, updatedAt: true, status: true });
 
 // === EXPLICIT API CONTRACT TYPES ===
 
@@ -291,6 +307,9 @@ export type InsertAdvertiser = z.infer<typeof insertAdvertiserSchema>;
 
 export type RouteAnalytics = typeof routeAnalytics.$inferSelect;
 export type InsertRouteAnalytics = z.infer<typeof insertRouteAnalyticsSchema>;
+
+export type JobApplication = typeof jobApplications.$inferSelect;
+export type InsertJobApplication = z.infer<typeof insertJobApplicationSchema>;
 
 // Request types
 export type CreateBusRouteRequest = InsertBusRoute;

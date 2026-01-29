@@ -10,6 +10,7 @@ import {
   provinces,
   municipalities,
   jobs,
+  jobApplications,
   advertisements,
   advertiserApplications,
   advertisers,
@@ -33,6 +34,8 @@ import {
   type InsertMunicipality,
   type Job,
   type InsertJob,
+  type JobApplication,
+  type InsertJobApplication,
   type Advertisement,
   type InsertAdvertisement,
   type AdvertiserApplication,
@@ -92,6 +95,14 @@ export interface IStorage {
   createJob(job: InsertJob): Promise<Job>;
   updateJob(id: number, updates: Partial<InsertJob>): Promise<Job>;
   deleteJob(id: number): Promise<void>;
+
+  // Job Applications
+  getJobApplications(jobId?: number): Promise<(JobApplication & { job: Job })[]>;
+  getJobApplication(id: number): Promise<JobApplication | undefined>;
+  getJobApplicationsByEmail(email: string): Promise<(JobApplication & { job: Job })[]>;
+  createJobApplication(app: InsertJobApplication): Promise<JobApplication>;
+  updateJobApplication(id: number, updates: Partial<InsertJobApplication>): Promise<JobApplication>;
+  deleteJobApplication(id: number): Promise<void>;
 
   // Advertisements
   getAdvertisements(activeOnly?: boolean): Promise<Advertisement[]>;
@@ -373,6 +384,59 @@ export class DatabaseStorage implements IStorage {
 
   async deleteJob(id: number): Promise<void> {
     await db.delete(jobs).where(eq(jobs.id, id));
+  }
+
+  // Job Applications
+  async getJobApplications(jobId?: number): Promise<(JobApplication & { job: Job })[]> {
+    const query = db
+      .select({
+        application: jobApplications,
+        job: jobs,
+      })
+      .from(jobApplications)
+      .innerJoin(jobs, eq(jobApplications.jobId, jobs.id))
+      .orderBy(desc(jobApplications.createdAt));
+    
+    if (jobId) {
+      const results = await query.where(eq(jobApplications.jobId, jobId));
+      return results.map(r => ({ ...r.application, job: r.job }));
+    }
+    
+    const results = await query;
+    return results.map(r => ({ ...r.application, job: r.job }));
+  }
+
+  async getJobApplication(id: number): Promise<JobApplication | undefined> {
+    const [app] = await db.select().from(jobApplications).where(eq(jobApplications.id, id));
+    return app;
+  }
+
+  async getJobApplicationsByEmail(email: string): Promise<(JobApplication & { job: Job })[]> {
+    const results = await db
+      .select({
+        application: jobApplications,
+        job: jobs,
+      })
+      .from(jobApplications)
+      .innerJoin(jobs, eq(jobApplications.jobId, jobs.id))
+      .where(eq(jobApplications.email, email))
+      .orderBy(desc(jobApplications.createdAt));
+    
+    return results.map(r => ({ ...r.application, job: r.job }));
+  }
+
+  async createJobApplication(app: InsertJobApplication): Promise<JobApplication> {
+    const [newApp] = await db.insert(jobApplications).values(app).returning();
+    return newApp;
+  }
+
+  async updateJobApplication(id: number, updates: Partial<InsertJobApplication>): Promise<JobApplication> {
+    const [updated] = await db.update(jobApplications).set({ ...updates, updatedAt: new Date() }).where(eq(jobApplications.id, id)).returning();
+    return updated;
+  }
+
+  async deleteJobApplication(id: number): Promise<void> {
+    await db.delete(jobApplications).where(eq(jobApplications.id, id));
   }
 
   // Advertisements
