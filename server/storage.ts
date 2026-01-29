@@ -15,6 +15,8 @@ import {
   advertiserApplications,
   advertisers,
   routeAnalytics,
+  marketplaceVendors,
+  marketplaceProducts,
   type BusRoute,
   type InsertBusRoute,
   type Notification,
@@ -44,6 +46,10 @@ import {
   type InsertAdvertiser,
   type RouteAnalytics,
   type InsertRouteAnalytics,
+  type MarketplaceVendor,
+  type InsertMarketplaceVendor,
+  type MarketplaceProduct,
+  type InsertMarketplaceProduct,
 } from "@shared/schema";
 import { eq, desc, and, or, gt, lte, isNull } from "drizzle-orm";
 
@@ -118,6 +124,22 @@ export interface IStorage {
   createAdvertiserApplication(app: InsertAdvertiserApplication): Promise<AdvertiserApplication>;
   updateAdvertiserApplicationStatus(id: number, status: string): Promise<AdvertiserApplication>;
   deleteAdvertiserApplication(id: number): Promise<void>;
+
+  // Marketplace Vendors
+  getMarketplaceVendors(approvedOnly?: boolean): Promise<MarketplaceVendor[]>;
+  getMarketplaceVendor(id: number): Promise<MarketplaceVendor | undefined>;
+  getMarketplaceVendorByEmail(email: string): Promise<MarketplaceVendor | undefined>;
+  createMarketplaceVendor(vendor: InsertMarketplaceVendor): Promise<MarketplaceVendor>;
+  updateMarketplaceVendor(id: number, updates: Partial<InsertMarketplaceVendor>): Promise<MarketplaceVendor>;
+  approveMarketplaceVendor(id: number, approved: boolean): Promise<MarketplaceVendor>;
+  deleteMarketplaceVendor(id: number): Promise<void>;
+
+  // Marketplace Products
+  getMarketplaceProducts(vendorId?: number, category?: string): Promise<(MarketplaceProduct & { vendor: MarketplaceVendor })[]>;
+  getMarketplaceProduct(id: number): Promise<MarketplaceProduct | undefined>;
+  createMarketplaceProduct(product: InsertMarketplaceProduct): Promise<MarketplaceProduct>;
+  updateMarketplaceProduct(id: number, updates: Partial<InsertMarketplaceProduct>): Promise<MarketplaceProduct>;
+  deleteMarketplaceProduct(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -605,6 +627,93 @@ export class DatabaseStorage implements IStorage {
       ...a,
       routeName: routes.find(r => r.id === a.routeId)?.name || 'Unknown Route'
     }));
+  }
+
+  // Marketplace Vendors
+  async getMarketplaceVendors(approvedOnly: boolean = false): Promise<MarketplaceVendor[]> {
+    if (approvedOnly) {
+      return await db.select().from(marketplaceVendors)
+        .where(and(eq(marketplaceVendors.isApproved, true), eq(marketplaceVendors.isActive, true)))
+        .orderBy(marketplaceVendors.businessName);
+    }
+    return await db.select().from(marketplaceVendors).orderBy(marketplaceVendors.businessName);
+  }
+
+  async getMarketplaceVendor(id: number): Promise<MarketplaceVendor | undefined> {
+    const [vendor] = await db.select().from(marketplaceVendors).where(eq(marketplaceVendors.id, id));
+    return vendor;
+  }
+
+  async getMarketplaceVendorByEmail(email: string): Promise<MarketplaceVendor | undefined> {
+    const [vendor] = await db.select().from(marketplaceVendors).where(eq(marketplaceVendors.email, email));
+    return vendor;
+  }
+
+  async createMarketplaceVendor(vendor: InsertMarketplaceVendor): Promise<MarketplaceVendor> {
+    const [newVendor] = await db.insert(marketplaceVendors).values(vendor).returning();
+    return newVendor;
+  }
+
+  async updateMarketplaceVendor(id: number, updates: Partial<InsertMarketplaceVendor>): Promise<MarketplaceVendor> {
+    const [updated] = await db.update(marketplaceVendors).set(updates).where(eq(marketplaceVendors.id, id)).returning();
+    return updated;
+  }
+
+  async approveMarketplaceVendor(id: number, approved: boolean): Promise<MarketplaceVendor> {
+    const [updated] = await db.update(marketplaceVendors).set({ isApproved: approved }).where(eq(marketplaceVendors.id, id)).returning();
+    return updated;
+  }
+
+  async deleteMarketplaceVendor(id: number): Promise<void> {
+    await db.delete(marketplaceProducts).where(eq(marketplaceProducts.vendorId, id));
+    await db.delete(marketplaceVendors).where(eq(marketplaceVendors.id, id));
+  }
+
+  // Marketplace Products
+  async getMarketplaceProducts(vendorId?: number, category?: string): Promise<(MarketplaceProduct & { vendor: MarketplaceVendor })[]> {
+    let results;
+    if (vendorId) {
+      results = await db.select({
+        product: marketplaceProducts,
+        vendor: marketplaceVendors,
+      }).from(marketplaceProducts)
+        .innerJoin(marketplaceVendors, eq(marketplaceProducts.vendorId, marketplaceVendors.id))
+        .where(eq(marketplaceProducts.vendorId, vendorId))
+        .orderBy(marketplaceProducts.name);
+    } else {
+      results = await db.select({
+        product: marketplaceProducts,
+        vendor: marketplaceVendors,
+      }).from(marketplaceProducts)
+        .innerJoin(marketplaceVendors, eq(marketplaceProducts.vendorId, marketplaceVendors.id))
+        .where(and(eq(marketplaceVendors.isApproved, true), eq(marketplaceProducts.isAvailable, true)))
+        .orderBy(marketplaceProducts.name);
+    }
+    
+    let filtered = results.map(r => ({ ...r.product, vendor: r.vendor }));
+    if (category) {
+      filtered = filtered.filter(p => p.category === category);
+    }
+    return filtered;
+  }
+
+  async getMarketplaceProduct(id: number): Promise<MarketplaceProduct | undefined> {
+    const [product] = await db.select().from(marketplaceProducts).where(eq(marketplaceProducts.id, id));
+    return product;
+  }
+
+  async createMarketplaceProduct(product: InsertMarketplaceProduct): Promise<MarketplaceProduct> {
+    const [newProduct] = await db.insert(marketplaceProducts).values(product).returning();
+    return newProduct;
+  }
+
+  async updateMarketplaceProduct(id: number, updates: Partial<InsertMarketplaceProduct>): Promise<MarketplaceProduct> {
+    const [updated] = await db.update(marketplaceProducts).set(updates).where(eq(marketplaceProducts.id, id)).returning();
+    return updated;
+  }
+
+  async deleteMarketplaceProduct(id: number): Promise<void> {
+    await db.delete(marketplaceProducts).where(eq(marketplaceProducts.id, id));
   }
 }
 

@@ -176,6 +176,37 @@ export const jobApplications = pgTable("job_applications", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// === MARKETPLACE ===
+
+export const marketplaceVendors = pgTable("marketplace_vendors", {
+  id: serial("id").primaryKey(),
+  businessName: text("business_name").notNull(),
+  contactName: text("contact_name").notNull(),
+  email: text("email").notNull().unique(),
+  phone: text("phone").notNull(),
+  description: text("description"),
+  category: text("category").notNull(), // 'food', 'airtime', 'accessories', 'services', 'other'
+  location: text("location"), // Physical location or area served
+  routeIds: integer("route_ids").array(), // Routes where vendor operates (null = all routes)
+  pin: text("pin").notNull(), // 4-6 digit PIN for vendor login
+  isActive: boolean("is_active").default(true),
+  isApproved: boolean("is_approved").default(false), // Admin approval required
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const marketplaceProducts = pgTable("marketplace_products", {
+  id: serial("id").primaryKey(),
+  vendorId: integer("vendor_id").notNull().references(() => marketplaceVendors.id),
+  name: text("name").notNull(),
+  description: text("description"),
+  price: integer("price").notNull(), // Price in ZAR cents
+  category: text("category").notNull(), // 'snacks', 'drinks', 'airtime', 'data', 'accessories', 'services'
+  imageUrl: text("image_url"),
+  isAvailable: boolean("is_available").default(true),
+  routeIds: integer("route_ids").array(), // Specific routes where available (null = vendor's routes)
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const busRoutesRelations = relations(busRoutes, ({ many }) => ({
   notifications: many(notifications),
   subscriptions: many(subscriptions),
@@ -272,6 +303,8 @@ export const insertAdvertiserApplicationSchema = createInsertSchema(advertiserAp
 export const insertAdvertiserSchema = createInsertSchema(advertisers).omit({ id: true, createdAt: true });
 export const insertRouteAnalyticsSchema = createInsertSchema(routeAnalytics).omit({ id: true });
 export const insertJobApplicationSchema = createInsertSchema(jobApplications).omit({ id: true, createdAt: true, updatedAt: true, status: true });
+export const insertMarketplaceVendorSchema = createInsertSchema(marketplaceVendors).omit({ id: true, createdAt: true, isApproved: true });
+export const insertMarketplaceProductSchema = createInsertSchema(marketplaceProducts).omit({ id: true, createdAt: true });
 
 // === EXPLICIT API CONTRACT TYPES ===
 
@@ -310,6 +343,12 @@ export type InsertRouteAnalytics = z.infer<typeof insertRouteAnalyticsSchema>;
 
 export type JobApplication = typeof jobApplications.$inferSelect;
 export type InsertJobApplication = z.infer<typeof insertJobApplicationSchema>;
+
+export type MarketplaceVendor = typeof marketplaceVendors.$inferSelect;
+export type InsertMarketplaceVendor = z.infer<typeof insertMarketplaceVendorSchema>;
+
+export type MarketplaceProduct = typeof marketplaceProducts.$inferSelect;
+export type InsertMarketplaceProduct = z.infer<typeof insertMarketplaceProductSchema>;
 
 // Request types
 export type CreateBusRouteRequest = InsertBusRoute;
