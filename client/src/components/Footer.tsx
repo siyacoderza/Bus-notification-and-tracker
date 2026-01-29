@@ -6,8 +6,14 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="mt-20">
-      <div className="bg-primary text-primary-foreground">
+    <footer className="mt-20 relative overflow-hidden">
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${heroImage})` }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-black/80" />
+      
+      <div className="relative z-10 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Section */}
@@ -16,7 +22,7 @@ export function Footer() {
               <Bus className="h-8 w-8 text-secondary" />
               <span>MzansiMove</span>
             </div>
-            <p className="text-primary-foreground/80 text-sm leading-relaxed">
+            <p className="text-white/80 text-sm leading-relaxed">
               Empowering South African commuters with real-time transit intelligence. 
               Move through your city with confidence and clarity.
             </p>
@@ -25,7 +31,7 @@ export function Footer() {
           {/* Quick Links */}
           <div>
             <h4 className="font-display font-bold text-lg mb-4 text-secondary">Quick Links</h4>
-            <ul className="space-y-2 text-sm text-primary-foreground/80">
+            <ul className="space-y-2 text-sm text-white/80">
               <li>
                 <Link href="/skills" className="hover:text-secondary transition-colors">Skills</Link>
               </li>
@@ -50,7 +56,7 @@ export function Footer() {
           {/* Support & Legal */}
           <div>
             <h4 className="font-display font-bold text-lg mb-4 text-secondary">Support</h4>
-            <ul className="space-y-2 text-sm text-primary-foreground/80">
+            <ul className="space-y-2 text-sm text-white/80">
               <li>
                 <a href="#" className="hover:text-secondary transition-colors">Help Center</a>
               </li>
@@ -80,26 +86,17 @@ export function Footer() {
                 <Mail className="h-5 w-5" />
               </a>
             </div>
-            <div className="flex items-start gap-2 text-sm text-primary-foreground/80">
+            <div className="flex items-start gap-2 text-sm text-white/80">
               <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
               <span>Johannesburg, South Africa</span>
             </div>
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-white/10 text-center text-sm text-primary-foreground/60">
+        <div className="mt-12 pt-8 border-t border-white/20 text-center text-sm text-white/60">
           <p>© {currentYear} MzansiMove. All rights reserved. Proudly South African 🇿🇦</p>
         </div>
       </div>
-      </div>
-
-      {/* Footer Image - mirrors top hero */}
-      <div className="relative h-48 sm:h-64 overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${heroImage})` }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/50 to-transparent" />
       </div>
     </footer>
   );
