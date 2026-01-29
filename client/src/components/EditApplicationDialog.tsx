@@ -70,6 +70,7 @@ export function EditApplicationDialog({ application }: EditApplicationDialogProp
       await updateApplication.mutateAsync({
         id: application.id,
         data,
+        ownerEmail: application.email,
       });
       toast({
         title: "Application Updated",

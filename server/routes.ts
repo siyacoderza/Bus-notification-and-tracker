@@ -376,11 +376,22 @@ export async function registerRoutes(
   app.put("/api/job-applications/:id", async (req, res) => {
     try {
       const id = Number(req.params.id);
+      const { ownerEmail, ...updateData } = req.body;
+      
+      if (!ownerEmail) {
+        return res.status(400).json({ message: "Email verification required" });
+      }
+      
       const app = await storage.getJobApplication(id);
       if (!app) {
         return res.status(404).json({ message: "Application not found" });
       }
-      const updated = await storage.updateJobApplication(id, req.body);
+      
+      if (app.email.toLowerCase() !== ownerEmail.toLowerCase()) {
+        return res.status(403).json({ message: "You can only edit your own applications" });
+      }
+      
+      const updated = await storage.updateJobApplication(id, updateData);
       res.json(updated);
     } catch (err) {
       res.status(400).json({ message: "Invalid input" });
@@ -389,10 +400,21 @@ export async function registerRoutes(
 
   app.delete("/api/job-applications/:id", async (req, res) => {
     const id = Number(req.params.id);
+    const ownerEmail = req.query.email as string;
+    
+    if (!ownerEmail) {
+      return res.status(400).json({ message: "Email verification required" });
+    }
+    
     const app = await storage.getJobApplication(id);
     if (!app) {
       return res.status(404).json({ message: "Application not found" });
     }
+    
+    if (app.email.toLowerCase() !== ownerEmail.toLowerCase()) {
+      return res.status(403).json({ message: "You can only delete your own applications" });
+    }
+    
     await storage.deleteJobApplication(id);
     res.status(204).send();
   });

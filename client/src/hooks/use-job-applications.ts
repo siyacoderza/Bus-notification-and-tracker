@@ -42,23 +42,29 @@ export function useCreateJobApplication() {
 
 export function useUpdateJobApplication() {
   return useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: Partial<InsertJobApplication> }) => {
-      const res = await apiRequest("PUT", `/api/job-applications/${id}`, data);
+    mutationFn: async ({ id, data, ownerEmail }: { id: number; data: Partial<InsertJobApplication>; ownerEmail: string }) => {
+      const res = await apiRequest("PUT", `/api/job-applications/${id}`, { ...data, ownerEmail });
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/job-applications"] });
+      queryClient.invalidateQueries({ predicate: (query) => {
+        const key = query.queryKey[0];
+        return typeof key === "string" && key.includes("/api/job-applications");
+      }});
     },
   });
 }
 
 export function useDeleteJobApplication() {
   return useMutation({
-    mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/job-applications/${id}`);
+    mutationFn: async ({ id, ownerEmail }: { id: number; ownerEmail: string }) => {
+      await apiRequest("DELETE", `/api/job-applications/${id}?email=${encodeURIComponent(ownerEmail)}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/job-applications"] });
+      queryClient.invalidateQueries({ predicate: (query) => {
+        const key = query.queryKey[0];
+        return typeof key === "string" && key.includes("/api/job-applications");
+      }});
     },
   });
 }
