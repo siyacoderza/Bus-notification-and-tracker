@@ -1,45 +1,12 @@
-import { Bus, Github, Twitter, Mail, MapPin, ArrowRight } from "lucide-react";
+import { Bus, Github, Twitter, Mail, MapPin } from "lucide-react";
 import { Link } from "wouter";
-import { Button } from "@/components/ui/button";
-import heroCommuters from "@/assets/images/hero-commuters.png";
+import heroImage from "@/assets/images/hero-transit.png";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
     <footer className="mt-20">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden text-white py-16 px-4 sm:px-6 lg:px-8">
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${heroCommuters})` }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/80" />
-        
-        <div className="max-w-4xl mx-auto relative z-10 text-center">
-          <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">
-            Ready to Move with <span className="text-secondary">Confidence?</span>
-          </h2>
-          <p className="text-lg opacity-90 mb-8 max-w-2xl mx-auto">
-            Join thousands of South African commuters who trust MzansiMove for real-time transit updates and alerts.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/routes">
-              <Button size="lg" className="bg-secondary text-secondary-foreground hover:bg-secondary/90" data-testid="button-footer-find-route">
-                Find Your Route
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-            <Link href="/notifications">
-              <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10" data-testid="button-footer-alerts">
-                View Live Alerts
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Footer Links */}
       <div className="bg-primary text-primary-foreground">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -124,6 +91,15 @@ export function Footer() {
           <p>© {currentYear} MzansiMove. All rights reserved. Proudly South African 🇿🇦</p>
         </div>
       </div>
+      </div>
+
+      {/* Footer Image - mirrors top hero */}
+      <div className="relative h-48 sm:h-64 overflow-hidden">
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${heroImage})` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/50 to-transparent" />
       </div>
     </footer>
   );
