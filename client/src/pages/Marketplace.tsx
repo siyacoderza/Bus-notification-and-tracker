@@ -1,11 +1,14 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShoppingBag, Search, Phone, Mail, MapPin, Store, Loader2 } from "lucide-react";
+import { ShoppingBag, Search, Phone, Mail, MapPin, Store, Loader2, CheckCircle, XCircle, Trash2, Shield } from "lucide-react";
+import { useAdminMode } from "@/hooks/use-admin-mode";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import type { MarketplaceProduct, MarketplaceVendor } from "@shared/schema";
 
 const CATEGORIES = [
@@ -25,6 +28,8 @@ function formatPrice(cents: number): string {
 export default function Marketplace() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const { isAdmin } = useAdminMode();
+  const { toast } = useToast();
 
   const { data: products = [], isLoading: productsLoading } = useQuery<(MarketplaceProduct & { vendor: MarketplaceVendor })[]>({
     queryKey: ["/api/marketplace/products"],
@@ -32,6 +37,34 @@ export default function Marketplace() {
 
   const { data: vendors = [], isLoading: vendorsLoading } = useQuery<MarketplaceVendor[]>({
     queryKey: ["/api/marketplace/vendors"],
+  });
+
+  const { data: allVendors = [], isLoading: allVendorsLoading } = useQuery<MarketplaceVendor[]>({
+    queryKey: ["/api/marketplace/admin/vendors"],
+    enabled: isAdmin,
+  });
+
+  const approveVendor = useMutation({
+    mutationFn: async ({ id, approved }: { id: number; approved: boolean }) => {
+      await apiRequest("PUT", `/api/marketplace/admin/vendors/${id}/approve`, { approved });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/marketplace/admin/vendors"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/marketplace/vendors"] });
+      toast({ title: "Vendor status updated" });
+    },
+  });
+
+  const deleteVendor = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest("DELETE", `/api/marketplace/admin/vendors/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/marketplace/admin/vendors"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/marketplace/vendors"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/marketplace/products"] });
+      toast({ title: "Vendor deleted" });
+    },
   });
 
   const filteredProducts = products.filter((product) => {
@@ -76,6 +109,12 @@ export default function Marketplace() {
         <TabsList>
           <TabsTrigger value="products" data-testid="tab-products">Products</TabsTrigger>
           <TabsTrigger value="vendors" data-testid="tab-vendors">Vendors</TabsTrigger>
+          {isAdmin && (
+            <TabsTrigger value="admin" data-testid="tab-admin" className="text-amber-600">
+              <Shield className="h-4 w-4 mr-1" />
+              Admin
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="products" className="space-y-6">
@@ -225,6 +264,120 @@ export default function Marketplace() {
             </div>
           )}
         </TabsContent>
+
+        {isAdmin && (
+          <TabsContent value="admin" className="space-y-6">
+            <Card className="bg-amber-50 dark:bg-amber-950 border-amber-200 dark:border-amber-800">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
+                  <Shield className="h-5 w-5" />
+                  <span className="font-medium">Admin Mode - Manage Marketplace Vendors</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {allVendorsLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : allVendors.length === 0 ? (
+              <div className="text-center py-12">
+                <Store className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium text-foreground mb-2">No vendor applications</h3>
+                <p className="text-muted-foreground">
+                  Vendors will appear here when they register
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">All Vendors ({allVendors.length})</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {allVendors.map((vendor) => (
+                    <Card key={vendor.id} data-testid={`admin-vendor-card-${vendor.id}`}>
+                      <CardHeader className="pb-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <CardTitle className="text-lg flex items-center gap-2">
+                            <Store className="h-5 w-5 text-primary" />
+                            {vendor.businessName}
+                          </CardTitle>
+                          <div className="flex gap-1">
+                            {vendor.isApproved ? (
+                              <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+                                Approved
+                              </Badge>
+                            ) : (
+                              <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100">
+                                Pending
+                              </Badge>
+                            )}
+                            {!vendor.isActive && (
+                              <Badge variant="destructive">Inactive</Badge>
+                            )}
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Mail className="h-4 w-4" />
+                          <span>{vendor.email}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Phone className="h-4 w-4" />
+                          <span>{vendor.phone}</span>
+                        </div>
+                        {vendor.location && (
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <MapPin className="h-4 w-4" />
+                            <span>{vendor.location}</span>
+                          </div>
+                        )}
+                        <Badge variant="outline">{vendor.category}</Badge>
+                      </CardContent>
+                      <CardFooter className="flex gap-2 flex-wrap">
+                        {!vendor.isApproved ? (
+                          <Button
+                            size="sm"
+                            onClick={() => approveVendor.mutate({ id: vendor.id, approved: true })}
+                            disabled={approveVendor.isPending}
+                            data-testid={`button-approve-vendor-${vendor.id}`}
+                          >
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            Approve
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => approveVendor.mutate({ id: vendor.id, approved: false })}
+                            disabled={approveVendor.isPending}
+                            data-testid={`button-revoke-vendor-${vendor.id}`}
+                          >
+                            <XCircle className="h-4 w-4 mr-1" />
+                            Revoke
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => {
+                            if (confirm(`Delete vendor "${vendor.businessName}" and all their products?`)) {
+                              deleteVendor.mutate(vendor.id);
+                            }
+                          }}
+                          disabled={deleteVendor.isPending}
+                          data-testid={`button-delete-vendor-${vendor.id}`}
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
