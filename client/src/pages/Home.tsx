@@ -1,9 +1,7 @@
 import { useAuth } from "@/hooks/use-auth";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { NotificationList } from "@/components/NotificationList";
-import { useNotifications } from "@/hooks/use-notifications";
-import { ArrowRight, Bus, Bell, Star, Search, Loader2, MapPin } from "lucide-react";
+import { ArrowRight, Bus, Bell, Star, Search, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useRoutes } from "@/hooks/use-routes";
@@ -11,10 +9,10 @@ import { RouteCard } from "@/components/RouteCard";
 import { DriverPinDialog } from "@/components/DriverPinDialog";
 import { AdminPinDialog } from "@/components/AdminPinDialog";
 import heroImage from "@/assets/images/hero-transit.png";
+import heroCommuters from "@/assets/images/hero-commuters.png";
 
 export default function Home() {
   const { user } = useAuth();
-  const { data: notifications, isLoading: isLoadingNotifications } = useNotifications();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeSearch, setActiveSearch] = useState("");
   const { data: routes, isLoading: isLoadingRoutes } = useRoutes(activeSearch);
@@ -23,11 +21,6 @@ export default function Home() {
     e.preventDefault();
     setActiveSearch(searchQuery.trim());
   };
-
-  // Filter for critical alerts on homepage
-  const criticalAlerts = notifications?.filter(n => 
-    ['delay', 'cancellation', 'emergency'].includes(n.type)
-  ).slice(0, 3) || [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -157,23 +150,37 @@ export default function Home() {
           </Link>
         </div>
 
-        {/* Critical Alerts Section */}
-        <div className="bg-white rounded-3xl p-8 border border-border/60 shadow-sm">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-display font-bold flex items-center gap-2">
-              <span className="w-2 h-8 rounded-full bg-destructive inline-block" />
-              Live Incidents
-            </h2>
-            <Link href="/notifications">
-              <Button variant="ghost" className="text-primary font-bold" data-testid="link-view-all-alerts">View All Alerts</Button>
-            </Link>
-          </div>
-          
-          <NotificationList 
-            notifications={criticalAlerts} 
-            loading={isLoadingNotifications} 
-            showNewBadge={true}
+        {/* Second Hero Section - Community */}
+        <div className="relative overflow-hidden rounded-3xl text-white">
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: `url(${heroCommuters})` }}
           />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/90 to-primary/70" />
+          <div className="relative z-10 p-8 md:p-12">
+            <div className="max-w-2xl">
+              <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">
+                Join the Movement
+              </h2>
+              <p className="text-lg opacity-90 mb-6">
+                Thousands of South African commuters rely on MzansiMove every day. 
+                Get real-time updates, share your experiences, and travel smarter together.
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <Link href="/routes">
+                  <Button size="lg" className="bg-white text-primary hover:bg-white/90">
+                    Find Your Route
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+                <Link href="/skills">
+                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+                    Learn More
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
