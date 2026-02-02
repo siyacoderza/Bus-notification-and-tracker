@@ -527,18 +527,18 @@ export default function AdvertisementsPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div className="bg-background rounded-lg p-3">
                   <Badge className="bg-blue-100 text-blue-800 mb-2">Standard</Badge>
-                  <p className="font-bold">R500 - R2,000/month</p>
-                  <p className="text-muted-foreground text-xs">Per-route sponsorship</p>
+                  <p className="font-bold">R575 - R2,300/month</p>
+                  <p className="text-muted-foreground text-xs">Per-route sponsorship (incl. 15% VAT)</p>
                 </div>
                 <div className="bg-background rounded-lg p-3">
                   <Badge className="bg-purple-100 text-purple-800 mb-2">Premium</Badge>
-                  <p className="font-bold">R3,000 - R5,000/month</p>
-                  <p className="text-muted-foreground text-xs">Featured route placement</p>
+                  <p className="font-bold">R3,450 - R5,750/month</p>
+                  <p className="text-muted-foreground text-xs">Featured route placement (incl. 15% VAT)</p>
                 </div>
                 <div className="bg-background rounded-lg p-3">
                   <Badge className="bg-amber-100 text-amber-800 mb-2">Exclusive</Badge>
-                  <p className="font-bold">R8,000 - R15,000/month</p>
-                  <p className="text-muted-foreground text-xs">Network-wide coverage</p>
+                  <p className="font-bold">R9,200 - R17,250/month</p>
+                  <p className="text-muted-foreground text-xs">Network-wide coverage (incl. 15% VAT)</p>
                 </div>
               </div>
               <div className="mt-4 pt-4 border-t">
