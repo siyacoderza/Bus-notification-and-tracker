@@ -32,17 +32,17 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 const placementOptions = [
-  { value: "standard", label: "Standard", price: "R500 - R2,000/month", description: "Logo badge on route cards" },
-  { value: "premium", label: "Premium", price: "R3,000 - R5,000/month", description: "Featured banner on route details" },
-  { value: "exclusive", label: "Exclusive", price: "R8,000 - R15,000/month", description: "Full sponsorship with priority placement" },
+  { value: "standard", label: "Standard", price: "R575 - R2,300/month", description: "Logo badge on route cards (incl. 15% VAT)" },
+  { value: "premium", label: "Premium", price: "R3,450 - R5,750/month", description: "Featured banner on route details (incl. 15% VAT)" },
+  { value: "exclusive", label: "Exclusive", price: "R9,200 - R17,250/month", description: "Full sponsorship with priority placement (incl. 15% VAT)" },
 ];
 
 const budgetOptions = [
-  "Under R2,000/month",
-  "R2,000 - R5,000/month",
-  "R5,000 - R10,000/month",
-  "R10,000 - R20,000/month",
-  "R20,000+/month",
+  "Under R2,300/month (incl. VAT)",
+  "R2,300 - R5,750/month (incl. VAT)",
+  "R5,750 - R11,500/month (incl. VAT)",
+  "R11,500 - R23,000/month (incl. VAT)",
+  "R23,000+/month (incl. VAT)",
 ];
 
 const durationOptions = [
