@@ -28,7 +28,7 @@ function Router() {
     <div className="flex flex-col min-h-screen">
       <ScrollToTop />
       <Navbar />
-      <main className="flex-grow pb-0">
+      <main className="flex-grow">
         <Switch>
           <Route path="/" component={Home} />
           <Route path="/route/:id" component={RouteDetails} />
