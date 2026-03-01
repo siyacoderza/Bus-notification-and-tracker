@@ -101,26 +101,27 @@ export function Navbar() {
           <Link href="/">
             <div className="flex items-center gap-2 font-display text-2xl font-bold text-primary cursor-pointer shrink-0">
               <Bus className="h-7 w-7 text-secondary" />
-              <span className="hidden sm:inline">MzansiMove</span>
+              <span className="hidden lg:inline">MzansiMove</span>
+              <span className="inline lg:hidden sm:inline">Mzansi</span>
             </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-2 flex-1 justify-center">
+          <nav className="hidden md:flex items-center gap-1 flex-1 justify-center overflow-x-auto no-scrollbar py-2">
             {links.map((link) => {
               const Icon = link.icon;
               const isActive = location === link.href;
               return (
                 <Link key={link.href} href={link.href}>
                   <button 
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-base font-medium transition-colors ${
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                       isActive 
                         ? 'bg-primary/10 text-primary' 
                         : 'text-muted-foreground hover:text-primary hover:bg-muted'
                     }`}
                     data-testid={`nav-${link.label.toLowerCase().replace(/\s+/g, '-')}`}
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-4 w-4 shrink-0" />
                     <span>{link.label}</span>
                   </button>
                 </Link>
