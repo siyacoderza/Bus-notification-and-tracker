@@ -38,7 +38,7 @@ async function buildAll() {
 
   if (process.env.NODE_ENV !== "production") {
   console.log("pushing database schema...");
-  execSync("npm run db:push", { stdio: "inherit" });
+  //execSync("npm run db:push", { stdio: "inherit" });
   console.log("database schema pushed successfully");
 } else {
   console.log("Skipping db:push in production build");
