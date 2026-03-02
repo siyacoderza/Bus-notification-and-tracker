@@ -36,9 +36,13 @@ const allowlist = [
 async function buildAll() {
   await rm("dist", { recursive: true, force: true });
 
+  if (process.env.NODE_ENV !== "production") {
   console.log("pushing database schema...");
   execSync("npm run db:push", { stdio: "inherit" });
   console.log("database schema pushed successfully");
+} else {
+  console.log("Skipping db:push in production build");
+}
 
   console.log("building client...");
   await viteBuild();
