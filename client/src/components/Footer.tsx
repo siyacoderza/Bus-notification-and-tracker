@@ -58,7 +58,10 @@ export function Footer() {
             <h4 className="font-display font-bold text-lg mb-4 text-secondary">Support</h4>
             <ul className="space-y-2 text-sm text-white/80">
               <li>
-                <a href="https://wa.me/27641037980" target="_blank" rel="noopener noreferrer" className="hover:text-secondary transition-colors">Help Center (WhatsApp)</a>
+                <a href="https://wa.me/27641037980" target="_blank" rel="noopener noreferrer" className="hover:text-secondary transition-colors text-sm font-medium flex items-center gap-2">
+                  <Mail className="h-4 w-4" />
+                  Contact Us (WhatsApp)
+                </a>
               </li>
               <li>
                 <a href="#" className="hover:text-secondary transition-colors">Privacy Policy</a>
