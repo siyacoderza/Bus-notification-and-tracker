@@ -51,70 +51,46 @@ export default function Home() {
             </h1>
             <p className="text-xl opacity-90 mb-12 font-light max-w-2xl mx-auto">
               Real-time bus schedules and alerts for South Africa. 
-              Search for your route to get live updates.
+              Stay updated with live route information.
             </p>
-            
-            <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto mb-12">
-              <div className="relative group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 text-muted-foreground transition-colors group-focus-within:text-primary" />
-                <Input
-                  type="text"
-                  placeholder="Where are you going? (e.g., Soweto, Sandton)"
-                  className="h-16 pl-12 pr-32 text-lg rounded-2xl bg-white/95 text-foreground border-0 shadow-2xl focus-visible:ring-2 focus-visible:ring-secondary transition-all"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  data-testid="input-route-search"
-                />
-                <Button 
-                  type="submit"
-                  className="absolute right-2 top-2 h-12 px-6 rounded-xl bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-lg"
-                  data-testid="button-search-submit"
-                >
-                  Search
-                </Button>
-              </div>
-            </form>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 pb-[15px]">
-        {/* Search Results Section */}
-        {activeSearch && (
-          <div className="mb-12">
-            <div className="bg-white rounded-3xl p-8 border border-border/60 shadow-lg mb-8">
-              <h2 className="text-2xl font-display font-bold mb-6 flex items-center gap-2">
-                <Search className="h-6 w-6 text-primary" />
-                Search Results for "{activeSearch}"
+        {/* Join the Movement - Moved Up */}
+        <div className="relative overflow-hidden rounded-3xl text-white mb-12 shadow-2xl">
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: `url(${heroCommuters})` }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/90 to-primary/70" />
+          <div className="relative z-10 p-8 md:p-12">
+            <div className="max-w-2xl">
+              <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">
+                Join the Movement
               </h2>
-              
-              {isLoadingRoutes ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
-              ) : routes && routes.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {routes
-                    .sort((a, b) => {
-                      const aPinned = user?.pinnedRoutes?.includes(a.id);
-                      const bPinned = user?.pinnedRoutes?.includes(b.id);
-                      if (aPinned && !bPinned) return -1;
-                      if (!aPinned && bPinned) return 1;
-                      return 0;
-                    })
-                    .map((route) => (
-                      <RouteCard key={route.id} route={route} showAdminControls={user?.role === 'admin'} />
-                    ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground text-lg">No routes found matching your search.</p>
-                </div>
-              )}
+              <p className="text-lg opacity-90 mb-6">
+                Thousands of South African commuters rely on MzansiMove every day. 
+                Get real-time updates, share your experiences, and travel smarter together.
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <Link href="/routes">
+                  <Button size="lg" className="bg-white text-primary hover:bg-white/90">
+                    Find Your Route
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+                <Link href="/skills">
+                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
+                    Learn More
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
-        )}
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {/* Feature Cards */}
@@ -148,39 +124,6 @@ export default function Home() {
               <p className="text-muted-foreground">Hear from fellow commuters and share your own travel experiences.</p>
             </button>
           </Link>
-        </div>
-
-        {/* Second Hero Section - Community */}
-        <div className="relative overflow-hidden rounded-3xl text-white">
-          <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `url(${heroCommuters})` }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/90 to-primary/70" />
-          <div className="relative z-10 p-8 md:p-12">
-            <div className="max-w-2xl">
-              <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">
-                Join the Movement
-              </h2>
-              <p className="text-lg opacity-90 mb-6">
-                Thousands of South African commuters rely on MzansiMove every day. 
-                Get real-time updates, share your experiences, and travel smarter together.
-              </p>
-              <div className="flex flex-wrap gap-4">
-                <Link href="/routes">
-                  <Button size="lg" className="bg-white text-primary hover:bg-white/90">
-                    Find Your Route
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
-                <Link href="/skills">
-                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
-                    Learn More
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
