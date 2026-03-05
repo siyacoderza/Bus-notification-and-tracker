@@ -58,7 +58,7 @@ export default function Home() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 pb-[15px]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 pb-[15px] mt-12">
         {/* Join the Movement - Moved Up */}
         <div className="relative overflow-hidden rounded-3xl text-white mb-12 shadow-2xl">
           <div 
