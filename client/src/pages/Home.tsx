@@ -44,15 +44,42 @@ export default function Home() {
             </div>
           </nav>
 
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-5xl md:text-6xl font-display font-extrabold tracking-tight mb-6 leading-tight">
-              Commute with <br />
-              <span className="text-secondary">Confidence.</span>
-            </h1>
-            <p className="text-xl opacity-90 mb-12 font-light max-w-2xl mx-auto">
-              Real-time bus schedules and alerts for South Africa. 
-              Stay updated with live route information.
-            </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start mb-8">
+            {/* Search Bar - Top Left */}
+            <div className="md:col-span-1">
+              <form onSubmit={handleSearch} className="relative">
+                <div className="relative group">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                  <Input
+                    type="text"
+                    placeholder="Where are you going?"
+                    className="w-full h-12 pl-10 pr-3 text-sm rounded-lg bg-white/95 text-foreground border-0 shadow-lg focus-visible:ring-2 focus-visible:ring-secondary transition-all"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    data-testid="input-route-search"
+                  />
+                </div>
+                <Button 
+                  type="submit"
+                  className="mt-2 w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-lg text-sm"
+                  data-testid="button-search-submit"
+                >
+                  Search
+                </Button>
+              </form>
+            </div>
+
+            {/* Headline - Center and Right */}
+            <div className="md:col-span-2 text-left md:text-center">
+              <h1 className="text-4xl md:text-5xl font-display font-extrabold tracking-tight mb-4 leading-tight">
+                Commute with <br />
+                <span className="text-secondary">Confidence.</span>
+              </h1>
+              <p className="text-lg opacity-90 font-light max-w-2xl">
+                Real-time bus schedules and alerts for South Africa. 
+                Search for your route to get live updates.
+              </p>
+            </div>
           </div>
         </div>
       </div>
