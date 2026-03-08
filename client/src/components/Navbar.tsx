@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Bus, Home, MapPin, Bell, Share2, Menu, Star, Briefcase, Megaphone, BookOpen, Building2, ShoppingBag } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useToast } from "@/hooks/use-toast";
 import { DriverPinDialog } from "@/components/DriverPinDialog";
@@ -13,6 +13,11 @@ export function Navbar() {
   const [location] = useLocation();
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
+
+  // Close menu when location changes
+  useEffect(() => {
+    setOpen(false);
+  }, [location]);
 
   const handleShare = () => {
     if (navigator.share) {
@@ -66,9 +71,8 @@ export function Navbar() {
                     const Icon = link.icon;
                     const isActive = location === link.href;
                     return (
-                      <Link key={link.href} href={link.href}>
+                      <Link key={`mobile-${link.href}`} href={link.href}>
                         <button 
-                          onClick={() => setOpen(false)}
                           className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors ${
                             isActive 
                               ? 'bg-primary/10 text-primary' 
@@ -112,7 +116,7 @@ export function Navbar() {
               const Icon = link.icon;
               const isActive = location === link.href;
               return (
-                <Link key={link.href} href={link.href}>
+                <Link key={`desktop-${link.href}`} href={link.href}>
                   <button 
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                       isActive 
