@@ -4,6 +4,7 @@ import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
 export default defineConfig({
+  base: "/Bus-notification-and-tracker/",  // ADD THIS LINE
   plugins: [
     react(),
     runtimeErrorOverlay(),
@@ -35,6 +36,9 @@ export default defineConfig({
     fs: {
       strict: true,
       deny: ["**/.*"],
+    },
+  },
+});      deny: ["**/.*"],
     },
   },
 });
